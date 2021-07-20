@@ -20,11 +20,14 @@
     selectedItem.set(data);
   };
 
-  const addChildren = () => {
+  const addChildren = (e) => {
+    e.stopPropagation();
     ItemsStore.add(data);
   };
 
-  const toggleChildren = () => {
+  const toggleChildren = (e) => {
+    e.stopPropagation();
+
     if (data.showingChildren) {
       ItemsStore.hideChildren(data);
     } else {

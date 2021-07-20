@@ -1,10 +1,45 @@
-<script>
-  // your script goes here
+<script lang="ts">
+  import type { Item } from "../../global";
+
+  import { selectedItem, styleStore } from "../../store";
+  import Input from "./components/Input.svelte";
+
+  let item = null as Item;
+
+  selectedItem.subscribe((val: Item) => {
+    item = val;
+  });
+
+  const handleOnInputLabel = (e) => {
+    selectedItem.setValue("label", e.target.value);
+  };
+
+  const handleOnInputStyle = (e) => {
+    styleStore.add(item, e.target.value);
+  };
 </script>
 
 <aside class="right-sidebar">
   <div class="right-sidebar__inner">
-    <div class="inputs-container" />
+    {#if item}
+      <div class="inputs-container">
+        <Input
+          data={{
+            value: item.label,
+            label: "Label",
+          }}
+          on:input={handleOnInputLabel}
+        />
+        <Input
+          data={{
+            value: item.label,
+            label: "Styles",
+            big: true,
+          }}
+          on:input={handleOnInputStyle}
+        />
+      </div>
+    {/if}
   </div>
 </aside>
 

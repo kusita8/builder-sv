@@ -17,3 +17,9 @@ export interface UserSiteEvent {
   event: keyof typeof ENUMS.USER_SITE_EVENTS;
   data: any;
 }
+
+export interface StyleStoreItem {
+  [id: string]: {
+    [target]: string
+  }
+}

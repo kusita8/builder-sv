@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store';
 import { ENUMS } from './enums';
-import type { Item, UserSiteEvent } from './global';
+import type { Item, StyleStoreItem, UserSiteEvent } from './global';
 import { getId } from './utils';
 
-const { ADD_TO_PARENT, CHANGE_LOCATION } = ENUMS.USER_SITE_EVENTS
+const { ADD_TO_PARENT, CHANGE_LOCATION, UPDATE_STYLE } = ENUMS.USER_SITE_EVENTS
 const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS
 
 export const ItemsStore = (() => {
@@ -23,6 +23,7 @@ export const ItemsStore = (() => {
 
   return {
     subscribe,
+    refresh: () => update(a => a),
     add: (parent?: Item, item = {} as any) => {
 
       const newItem = {
@@ -145,4 +146,61 @@ export const ItemsStore = (() => {
 
 export const userSiteEvents = writable({} as UserSiteEvent);
 
-export const selectedItem = writable({} as Item | {});
+export const selectedItem = (() => {
+  const { subscribe, update, set } = writable({} as Item | {});
+
+  return {
+    subscribe,
+    update,
+    set,
+    setValue: (key: keyof Item, val: any) => {
+      update(item => {
+        if (Object.keys(item).length > 0) {
+          item[key] = val;
+
+          // refresh items store
+          ItemsStore.refresh();
+        }
+
+        return item
+      })
+    }
+  }
+})()
+
+export const styleStore = (() => {
+  const { subscribe, update } = writable({} as StyleStoreItem);
+
+  return {
+    subscribe,
+    add: (item: Item | null, style: string) => {
+
+      if (Object.keys(item).length === 0) return;
+
+      // TODO: this should come as parameter
+      const target = 'ALL';
+
+      update(store => {
+        // overwriting style for rule because user will be editing it
+        store[item.id] = {
+          ...store[item.id],
+          [target]: style
+        }
+
+        // send event to user site
+        userSiteEvents.set({
+          event: UPDATE_STYLE as keyof typeof ENUMS.USER_SITE_EVENTS,
+          data: {
+            id: item.id,
+            style: store[item.id][target],
+            target,
+          }
+        })
+
+        return store
+      })
+
+    }
+  }
+})()
+

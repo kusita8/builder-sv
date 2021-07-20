@@ -1,6 +1,9 @@
+import { ENUMS } from '../enums';
 import type { Item } from '../global';
 import { ItemsStore, selectedItem } from '../store';
 import { s } from '../utils';
+
+const { DATA_ID } = ENUMS;
 
 let items = [];
 
@@ -12,9 +15,7 @@ let nodesChanged = [];
 let holding = 0;
 let newDepth;
 let grabbing = false;
-let leftParent = false;
 let newParentId = null;
-
 
 const HandleMouseUp = () => {
   holding -= 1
@@ -45,10 +46,10 @@ const ungrabItem = (node) => {
   node.classList.remove('grab')
 }
 
-const handleDepth = (node, dir, item) => {
+const handleDepth = (node, dir) => {
   if (node) {
     // si tiene el icono, tiene children
-    const passingNodeId = node.getAttribute('data-id');
+    const passingNodeId = node.getAttribute(DATA_ID);
     const passingItem = items.find(el => el.id === passingNodeId) as Item;
 
     if (dir === 1 && passingItem.hasChildren) {
@@ -120,7 +121,6 @@ export const DragHandler = (event, item: Item) => {
     halfHeight = height / 2;
     Item = { ...item };
 
-
     addTransition(children);
     grabItem(node);
     // The mouse position (in window coordinates)
@@ -184,7 +184,7 @@ export const DragHandler = (event, item: Item) => {
           const nodeChangedIndex = nodesAffected;
           const node = nodesChanged[nodeChangedIndex];
 
-          handleDepth(node, dir, item)
+          handleDepth(node, dir)
 
         } else if (nodesAffected > 0) {
           // SELECT NEW AFFECTED NODE
@@ -201,7 +201,7 @@ export const DragHandler = (event, item: Item) => {
               node.style.transform = `translate3D(0,${height * (sign * -1)}px,0)`;
 
               // udpate the depth to the element i'm passing
-              handleDepth(node, dir, item)
+              handleDepth(node, dir)
 
             };
           }
@@ -241,6 +241,7 @@ export const DragHandler = (event, item: Item) => {
 
     // add in array
     const newElPositon = elementIndex + (previousNodesAffected * previousSign);
+
     if (newParentId) {
       Item.parentId = newParentId;
     }

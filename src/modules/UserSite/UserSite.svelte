@@ -1,6 +1,5 @@
 <script lang="ts">
   import { selectedItem } from "../../store";
-  import Highlight from "../../components/Highlight.svelte";
 
   let iframe = {} as HTMLIFrameElement;
 
@@ -39,9 +38,11 @@
 <div class="user">
   <div class="user-site" on:click={() => selectedItem.set({})}>
     <div class="user-site-scrollspace" />
-    <div class="user-site__inner">
+    <div
+      class="user-site__inner"
+      style="transform: translate3d(220px, 220px, 0px) scale(0.22);"
+    >
       <div class="user-site__container">
-        <Highlight />
         <div class="user-site__cover" on:click={handleClick} />
         <iframe
           bind:this={iframe}
@@ -77,7 +78,6 @@
 
     &__inner {
       position: relative;
-      transform: translate3d(220px, 220px, 0px) scale(0.22);
       transform-origin: 0 0 0;
       will-change: transform;
       margin-left: 90vw;

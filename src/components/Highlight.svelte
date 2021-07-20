@@ -1,19 +1,34 @@
-<script>
+<script lang="ts">
   import { selectedItem } from "../store";
+  import { onLoad, s } from "../utils";
+
+  let userSite = {} as HTMLElement;
   let currentItem = {};
   let hidden = true;
   let label = "";
   let style = "background: red;";
 
+  onLoad(() => {
+    userSite = s(".user-site__inner");
+  });
+
   const highlightItem = (item) => {
     const { top, left, height, width } = item.node.getBoundingClientRect();
+    const uSiteBounding = (
+      userSite.firstChild as HTMLElement
+    ).getBoundingClientRect();
+
+    const scale =
+      (userSite.style.transform.split(" scale(")[1].replace(/\)/, "") as any) *
+      1;
 
     style = `
-      width: ${width}px;
-      height: ${height}px;
-      transform: translate(${left}px, ${top}px);
+      width: ${width * scale}px;
+      height: ${height * scale}px;
+      transform: translate(${left * scale + uSiteBounding.left}px, ${
+      top * scale + uSiteBounding.top
+    }px);
     `;
-
     currentItem = item;
     label = item.label;
     hidden = false;
@@ -23,11 +38,11 @@
     label = "";
     style = "";
     hidden = true;
-    currentItem = {};
+    currentItem = false;
   };
 
   const updateCurrentItem = () => {
-    if (currentItem.node) {
+    if (currentItem) {
       highlightItem(currentItem);
     }
   };
@@ -35,7 +50,7 @@
   window.addEventListener("resize", () => updateCurrentItem());
 
   selectedItem.subscribe((data) => {
-    if (data.node) {
+    if (Object.keys(data).length > 0) {
       highlightItem(data);
     } else {
       clearHighlight();
@@ -43,8 +58,8 @@
   });
 </script>
 
-<div class:hidden class="highlight">
-  <div class="highlight__inner" {style}>
+<div class:hidden class="highlight" {style}>
+  <div class="highlight__inner">
     <span class="highlight__label">{label}</span>
   </div>
 </div>
@@ -76,10 +91,9 @@
         justify-items: center;
         align-items: center;
         white-space: nowrap;
-        top: 0;
+        top: -25px;
         left: 0;
         transform-origin: 0 0 0;
-        transform: translate3d(0px, -105px, 0px) scale(4.545454545454546);
       }
     }
   }

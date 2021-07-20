@@ -47,14 +47,13 @@ const HandleZoom = (e: WheelEvent) => {
     const transform = `translate3D(${cx}px, ${cy}px, 0px) scale(${nz})`
 
     zoomContainer.style.transform = transform;
-    highlightLabel.style.transform = `translate3D(0px, ${nz * -100}px, 0px) scale(${1 / nz})`
-
 
   } else if (!e.ctrlKey) {
     e.stopPropagation();
   }
 
   setTimeout(() => {
+    // refresh selected item to refresh highlight
     selectedItem.update(a => a)
   }, 20)
 }
