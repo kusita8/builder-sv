@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .b-empty {
+      padding-bottom: 75px;
+      padding-right: 75px;
+      outline-offset: -1px;
+      box-shadow: inset 0 0 0 4px rgb(0 0 0 / 10%),
+        inset 0 0 0 4px rgb(255 255 255 / 20%),
+        inset 0 0 0 1px rgb(255 255 255 / 30%);
+    }
+  </style>
+
+  <script>
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const isZooming = (e) => e.deltaY && (e.ctrlKey || e.deltaY % 1 !== 0);
+
+      const events = ['mousewheel', 'resize', 'wheel'];
+
+      events.forEach(ev => {
+        window.addEventListener(ev, (e) => {
+          if (e.deltaX === -0 && e.deltaY === -0) {
+            e.preventDefault();
+          } else if (isZooming(e)) {
+            e.preventDefault();
+            top.HandleZoom(e)
+          }
+        }, { passive: false })
+        document.addEventListener(ev, (e) => {
+          if (e.deltaX === -0 && e.deltaY === -0) {
+            e.preventDefault();
+          } else if (isZooming(e)) {
+            e.preventDefault();
+            top.HandleZoom(e)
+          }
+        }, { passive: false })
+      })
+    })
+    
+  </script>
+  <title>Document</title>
+</head>
+<body>
+
+</body>
+</html>
