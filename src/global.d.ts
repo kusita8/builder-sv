@@ -2,6 +2,10 @@
 
 import type { ENUMS } from "./enums";
 
+export interface Attribute {
+  [name: string]: string;
+}
+
 export interface Item {
   parentId: string | null;
   id: string;
@@ -11,6 +15,8 @@ export interface Item {
   node: HTMLElement | null;
   hasChildren: boolean;
   showingChildren: boolean;
+  attributes: Attribute | {}
+  className?: string;
 }
 
 export interface UserSiteEvent {
@@ -22,4 +28,9 @@ export interface StyleStoreItem {
   [id: string]: {
     [target]: string
   }
+}
+
+export interface Dimensions {
+  width: number,
+  height: number
 }

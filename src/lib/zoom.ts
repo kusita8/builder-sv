@@ -1,4 +1,4 @@
-import { selectedItem } from "../store";
+import { HighlightStore } from "../stores/HighlightStore";
 import { onLoad, s } from "../utils";
 
 let zoomArea = {} as HTMLElement
@@ -54,7 +54,7 @@ const HandleZoom = (e: WheelEvent) => {
 
   setTimeout(() => {
     // refresh selected item to refresh highlight
-    selectedItem.update(a => a)
+    HighlightStore.refresh();
   }, 20)
 }
 

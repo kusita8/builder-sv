@@ -1,0 +1,74 @@
+import { writable } from "svelte/store";
+import type { Attribute, Item } from "../global";
+import { ENUMS } from '../enums';
+import selectedItemInput from "../lib/selectedItemInput";
+import { ItemsStore } from './ItemsStore'
+import { HighlightStore } from './HighlightStore'
+import { UserSiteEventsStore } from './UserSiteEventsStore'
+
+const {
+  SET_ATTRIBUTE,
+  CHANGE_NODE_TAG
+} = ENUMS.USER_SITE_EVENTS
+
+export const SelectedItemStore = (() => {
+  const { subscribe, update, set } = writable({} as Item);
+
+  const updateSelected = (cb) => {
+    update(item => {
+      if (Object.keys(item).length > 0) {
+        return cb(item)
+      } else {
+        return item;
+      }
+    })
+  }
+
+  return {
+    subscribe,
+    set: (item: Item | {}) => {
+      set(item as Item);
+      HighlightStore.set(item);
+      selectedItemInput.set(item as Item);
+    },
+    setValue: (key: keyof Item, val: any) => {
+      updateSelected(item => {
+        item[key] = val;
+
+        // refresh items store
+        ItemsStore.refresh();
+
+        // refresh highlight
+        HighlightStore.set(item)
+
+        return item
+      })
+    },
+    setAttribute: (name: string, value: string) => {
+      updateSelected((item: Item) => {
+        (item.attributes as Attribute)[name] = value;
+
+        // send to user site
+        UserSiteEventsStore.set({
+          event: SET_ATTRIBUTE as keyof typeof ENUMS.USER_SITE_EVENTS,
+          data: { node: item.node, attribute: { name, value } }
+        })
+
+        return item
+      })
+    },
+    setTag: (newTag) => {
+      updateSelected((item: Item) => {
+        item.tag = newTag;
+
+        // send to user site
+        UserSiteEventsStore.set({
+          event: CHANGE_NODE_TAG as keyof typeof ENUMS.USER_SITE_EVENTS,
+          data: item
+        })
+
+        return item;
+      })
+    }
+  }
+})();

@@ -1,11 +1,16 @@
 <script lang="ts">
-  import { selectedItem } from "../../store";
+  import { DimensionsStore } from "../../stores/DimensionsStore";
+  import { SelectedItemStore } from "../../stores/SelectedItemStore";
+  import { DragHandler } from "./Resize";
 
   let iframe = {} as HTMLIFrameElement;
 
-  function click(x, y) {
+  const click = (x, y) => {
     var ev = document.createEvent("MouseEvent");
     var el = iframe.contentWindow.document.elementFromPoint(x, y);
+
+    if (!el) return;
+
     ev.initMouseEvent(
       "click",
       true /* bubble */,
@@ -24,7 +29,7 @@
       null
     );
     el.dispatchEvent(ev);
-  }
+  };
 
   const handleClick = (e) => {
     e.stopPropagation();
@@ -33,16 +38,38 @@
 
     click(offsetX, offsetY);
   };
+
+  const width = $DimensionsStore.width;
+  const height = $DimensionsStore.height;
+  const iframeContainerStyle = `width: ${width}px;height: ${height}px;`;
+
+  let userSiteContainer;
 </script>
 
 <div class="user">
-  <div class="user-site" on:click={() => selectedItem.set({})}>
+  <div class="user-site" on:click={() => SelectedItemStore.set({})}>
     <div class="user-site-scrollspace" />
     <div
       class="user-site__inner"
       style="transform: translate3d(220px, 220px, 0px) scale(0.22);"
     >
-      <div class="user-site__container">
+      <div
+        class="user-site__container"
+        {height}
+        {width}
+        style={iframeContainerStyle}
+        bind:this={userSiteContainer}
+      >
+        <div class="resize">
+          <div
+            class="resize__width"
+            on:mousedown={(e) => DragHandler(e, "width", userSiteContainer)}
+          />
+          <div
+            class="resize__height"
+            on:mousedown={(e) => DragHandler(e, "height", userSiteContainer)}
+          />
+        </div>
         <div class="user-site__cover" on:click={handleClick} />
         <iframe
           bind:this={iframe}
@@ -71,8 +98,8 @@
     position: absolute;
     left: 20%;
     width: 60%;
-    height: 100vh;
-    top: 0;
+    height: calc(100vh - var(--header-height));
+    top: var(--header-height);
     overflow: scroll;
     border: 1px solid black;
 
@@ -80,16 +107,22 @@
       position: relative;
       transform-origin: 0 0 0;
       will-change: transform;
-      margin-left: 90vw;
+      margin-left: 1000px;
 
       .user-site__container {
         display: flex;
         justify-content: center;
         align-items: center;
         transform: translateX(-8.3%);
-        min-width: 1440px;
         padding: 20% 0;
         position: relative;
+
+        &:hover {
+          .resize__width,
+          .resize__height {
+            opacity: 1;
+          }
+        }
       }
     }
   }
@@ -104,16 +137,54 @@
 
   #user-site {
     background: white;
-    min-height: 700px;
+    height: inherit;
     min-width: 100%;
     overflow-x: scroll;
     border: 0;
     display: inline;
     overflow: hidden;
+    pointer-events: none;
+    user-select: none;
   }
 
   .user-site-scrollspace {
     width: 200vw;
     height: 1px;
+  }
+
+  .resize {
+    $distance: -26px;
+    $size: 20px;
+
+    &:hover,
+    &:active {
+      .resize__width,
+      .resize__height {
+        opacity: 1;
+      }
+    }
+
+    &__height,
+    &__width {
+      position: absolute;
+      background: grey;
+      opacity: 0;
+      transition: opacity 100ms ease-in-out;
+    }
+
+    &__width {
+      right: $distance;
+      top: 0;
+      height: 100%;
+      width: $size;
+      cursor: ew-resize;
+    }
+
+    &__height {
+      bottom: $distance;
+      width: 100%;
+      height: $size;
+      cursor: ns-resize;
+    }
   }
 </style>

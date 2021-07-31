@@ -35,7 +35,7 @@ export const getId = (): string => {
 export const s = (sel) => document.querySelector(sel)
 
 export const onLoad = (cb) => {
-  window.addEventListener('load', e => cb(e))
+  window.addEventListener('load', cb)
 }
 
 export const createNode = ({ tag = 'div', ...attrs }): HTMLElement => {
@@ -50,4 +50,15 @@ export const createNode = ({ tag = 'div', ...attrs }): HTMLElement => {
   }
 
   return node;
+}
+
+export const closeOnOutsideClick = (className: string, cb: Function) => {
+  const handleClickOutside = (e) => {
+    const element = e.target.closest(className)
+    if (!element) {
+      cb();
+      window.removeEventListener('click', handleClickOutside);
+    }
+  }
+  window.addEventListener('click', handleClickOutside, true)
 }

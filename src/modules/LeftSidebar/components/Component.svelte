@@ -1,28 +1,37 @@
 <script lang="ts">
   import { DragHandler } from "../../../lib/drag";
   import Icon from "../../../components/Icon.svelte";
-  import { ItemsStore, selectedItem } from "../../../store";
+  import { ItemsStore } from "../../../stores/ItemsStore";
+  import { SelectedItemStore } from "../../../stores/SelectedItemStore";
   import type { Item } from "../../../global";
+  import { AddStore } from "../../../stores/AddStore";
   export let data: Item;
 
   const style = `padding-left: ${data.depth * 10}px`;
   let selected = false;
 
-  selectedItem.subscribe((item: Item) => {
-    if (item.id === data.id) {
-      selected = true;
-    } else {
-      selected = false;
-    }
+  SelectedItemStore.subscribe((item: Item) => {
+    if (item.id === data.id) selected = true;
+    else selected = false;
   });
 
   const selectComponent = () => {
-    selectedItem.set(data);
+    SelectedItemStore.set(data);
+  };
+
+  const handleLabelChange = (e) => {
+    e.stopPropagation();
+    const value = e.target.value;
+    data["label"] = value;
+    if (selected) {
+      SelectedItemStore.setValue("label", value);
+    }
   };
 
   const addChildren = (e) => {
     e.stopPropagation();
-    ItemsStore.add(data);
+    AddStore.set(data);
+    // ItemsStore.add(data);
   };
 
   const toggleChildren = (e) => {
@@ -54,7 +63,20 @@
         <Icon name="show" />
       </div>
     {/if}
-    <span>{data.label} - {data.id}</span>
+    <div class="label">
+      <textarea
+        on:mousedown={(e) => e.stopPropagation()}
+        on:click={(e) => e.stopPropagation()}
+        on:input={handleLabelChange}
+        rows="1"
+        wrap="off"
+        value={data.label}
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+    </div>
     <div class="component__add" on:click={addChildren}>
       <Icon name="add" />
     </div>
@@ -77,12 +99,20 @@
     position: relative;
 
     &.selected,
+    &:focus-within,
     &:hover {
       background: #e6ecf9;
     }
 
-    &.hidden {
-      display: none;
+    &:hover,
+    &:focus-within {
+      .label {
+        outline: 1px solid black;
+
+        textarea {
+          background: white;
+        }
+      }
     }
 
     &__inner {
@@ -92,20 +122,28 @@
       padding-right: 22px;
     }
 
-    span {
-      display: inline-block;
-      font-size: 9px;
-      padding-left: 14px;
+    .label {
+      height: 20px;
+      margin-left: 10px;
+
+      textarea {
+        font-size: 9px;
+        line-height: 19px;
+        resize: none;
+        border: 0;
+        border-radius: 0;
+        height: 100%;
+        padding-left: 2px;
+        border-radius: 1px;
+        outline: none;
+        background: transparent;
+      }
     }
 
     &__add :global(svg) {
       width: 13px;
       height: 13px;
     }
-  }
-
-  .component__show-icon + span {
-    padding-left: 0;
   }
 
   .component__show-icon {
@@ -115,6 +153,9 @@
     cursor: pointer;
     padding: 4px;
     transform: rotate(-90deg);
+    position: absolute;
+    left: -6px;
+    top: 2px;
 
     &:hover {
       background: rgb(224, 224, 224);

@@ -1,42 +1,91 @@
 <script lang="ts">
-  import type { Item } from "../../global";
+  import { AddStore } from "../../stores/AddStore";
 
-  import { selectedItem, styleStore } from "../../store";
-  import Input from "./components/Input.svelte";
+  import { SelectedItemStore } from "../../stores/SelectedItemStore";
+  import { StyleStore } from "../../stores/StyleStore";
+  import AttributesSection from "./components/AttributesSection.svelte";
+  import CheckboxSection from "./components/CheckboxSection.svelte";
+  import InputSection from "./components/InputSection.svelte";
+  import TagSection from "./components/TagSection.svelte";
+  import TargetSection from "./components/TargetSection.svelte";
 
-  let item = null as Item;
-
-  selectedItem.subscribe((val: Item) => {
-    item = val;
-  });
+  let target = {
+    copy: "ALL",
+    media: "ALL",
+  };
 
   const handleOnInputLabel = (e) => {
-    selectedItem.setValue("label", e.target.value);
+    SelectedItemStore.setValue("label", e.target.value);
   };
 
   const handleOnInputStyle = (e) => {
-    styleStore.add(item, e.target.value);
+    StyleStore.add($SelectedItemStore, e.target.value, target.media);
   };
+
+  const handleOnAttributeSubmit = (e) => {
+    e.preventDefault();
+
+    SelectedItemStore.setAttribute(e.detail.name, e.detail.value);
+  };
+
+  const handleOnTagSelect = (e) => {
+    SelectedItemStore.setTag(e.detail);
+  };
+
+  const handleOnTargetSelect = (e) => {
+    target = e.detail;
+  };
+
+  const handleOnComponentCheckbox = () => {
+    AddStore.addComponent($SelectedItemStore);
+  };
+
+  $: style = StyleStore.get($SelectedItemStore.id, target);
 </script>
 
 <aside class="right-sidebar">
   <div class="right-sidebar__inner">
-    {#if item}
+    {#if Object.keys($SelectedItemStore).length}
       <div class="inputs-container">
-        <Input
+        <CheckboxSection
+          on:change={handleOnComponentCheckbox}
+          label="Use as component"
+        />
+        <TargetSection
+          on:select={handleOnTargetSelect}
           data={{
-            value: item.label,
+            label: "Target",
+            selected: target,
+          }}
+        />
+        <TagSection
+          on:select={handleOnTagSelect}
+          data={{
+            label: "Tag",
+            selected: $SelectedItemStore.tag,
+          }}
+        />
+        <InputSection
+          on:input={handleOnInputLabel}
+          bind:value={$SelectedItemStore.label}
+          data={{
             label: "Label",
           }}
-          on:input={handleOnInputLabel}
         />
-        <Input
+        <InputSection
+          on:input={handleOnInputStyle}
+          bind:value={style}
           data={{
-            value: item.label,
             label: "Styles",
             big: true,
           }}
-          on:input={handleOnInputStyle}
+        />
+        <AttributesSection
+          on:submit={handleOnAttributeSubmit}
+          data={{
+            label: "Attributes",
+            attributes: $SelectedItemStore.attributes,
+          }}
         />
       </div>
     {/if}
@@ -51,27 +100,11 @@
 
     .right-sidebar__inner {
       padding-top: 20px;
+      position: relative;
 
       .inputs-container {
         max-width: 100%;
         font-size: 9px;
-      }
-
-      textarea,
-      input {
-        width: 100%;
-        font-family: inherit;
-        font-size: inherit;
-      }
-
-      label {
-        margin-bottom: 11px;
-        display: block;
-      }
-
-      textarea {
-        height: 100px;
-        resize: none;
       }
     }
   }

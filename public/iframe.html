@@ -19,6 +19,11 @@
         inset 0 0 0 4px rgb(255 255 255 / 20%),
         inset 0 0 0 1px rgb(255 255 255 / 30%);
     }
+
+    a {
+      display: block;
+      text-decoration: none;
+    }
     
     @media (max-width: 600px) {
       .facet_sidebar {
@@ -28,34 +33,6 @@
 
   </style>
 
-  <script>
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const isZooming = (e) => e.deltaY && (e.ctrlKey || e.deltaY % 1 !== 0);
-
-      const events = ['mousewheel', 'resize', 'wheel'];
-
-      events.forEach(ev => {
-        window.addEventListener(ev, (e) => {
-          if (e.deltaX === -0 && e.deltaY === -0) {
-            e.preventDefault();
-          } else if (isZooming(e)) {
-            e.preventDefault();
-            top.HandleZoom(e)
-          }
-        }, { passive: false })
-        document.addEventListener(ev, (e) => {
-          if (e.deltaX === -0 && e.deltaY === -0) {
-            e.preventDefault();
-          } else if (isZooming(e)) {
-            e.preventDefault();
-            top.HandleZoom(e)
-          }
-        }, { passive: false })
-      })
-    })
-    
-  </script>
   <title>Document</title>
 </head>
 <body>

@@ -1,10 +1,15 @@
-import { writable } from 'svelte/store';
-import { ENUMS } from './enums';
-import type { Item, StyleStoreItem, UserSiteEvent } from './global';
-import { getId } from './utils';
+import { writable } from "svelte/store";
+import type { Item } from "../global";
+import { UserSiteEventsStore } from "./UserSiteEventsStore";
+import { getId } from "../utils";
+import { ENUMS } from '../enums';
 
-const { ADD_TO_PARENT, CHANGE_LOCATION, UPDATE_STYLE } = ENUMS.USER_SITE_EVENTS
+const {
+  ADD_TO_PARENT,
+  CHANGE_LOCATION,
+} = ENUMS.USER_SITE_EVENTS
 const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS
+
 
 export const ItemsStore = (() => {
   const { subscribe, update } = writable([] as Item[])
@@ -25,16 +30,16 @@ export const ItemsStore = (() => {
     subscribe,
     refresh: () => update(a => a),
     add: (parent?: Item, item = {} as any) => {
-
       const newItem = {
         depth: 1,
         id: getId(),
-        tag: 'div',
+        tag: item.tag || 'div',
         label: item.label || 'Div',
+        attributes: item.attributes || {},
+        showingChildren: true,
+        hasChildren: false,
         node: null,
         parentId: null,
-        hasChildren: false,
-        showingChildren: true
       }
 
       update((items) => {
@@ -63,7 +68,7 @@ export const ItemsStore = (() => {
       })
 
       // send event to user site
-      userSiteEvents.set({
+      UserSiteEventsStore.set({
         event: ADD_TO_PARENT as keyof typeof ENUMS.USER_SITE_EVENTS,
         data: newItem
       })
@@ -133,7 +138,7 @@ export const ItemsStore = (() => {
         items.splice(leftSiblingIndex + 1, 0, item);
 
         // send event to user site
-        userSiteEvents.set({
+        UserSiteEventsStore.set({
           event: CHANGE_LOCATION as keyof typeof ENUMS.USER_SITE_EVENTS,
           data: { item, leftSibling }
         })
@@ -143,64 +148,3 @@ export const ItemsStore = (() => {
     },
   }
 })();
-
-export const userSiteEvents = writable({} as UserSiteEvent);
-
-export const selectedItem = (() => {
-  const { subscribe, update, set } = writable({} as Item | {});
-
-  return {
-    subscribe,
-    update,
-    set,
-    setValue: (key: keyof Item, val: any) => {
-      update(item => {
-        if (Object.keys(item).length > 0) {
-          item[key] = val;
-
-          // refresh items store
-          ItemsStore.refresh();
-        }
-
-        return item
-      })
-    }
-  }
-})()
-
-export const styleStore = (() => {
-  const { subscribe, update } = writable({} as StyleStoreItem);
-
-  return {
-    subscribe,
-    add: (item: Item | null, style: string) => {
-
-      if (Object.keys(item).length === 0) return;
-
-      // TODO: this should come as parameter
-      const target = 'ALL';
-
-      update(store => {
-        // overwriting style for rule because user will be editing it
-        store[item.id] = {
-          ...store[item.id],
-          [target]: style
-        }
-
-        // send event to user site
-        userSiteEvents.set({
-          event: UPDATE_STYLE as keyof typeof ENUMS.USER_SITE_EVENTS,
-          data: {
-            id: item.id,
-            style: store[item.id][target],
-            target,
-          }
-        })
-
-        return store
-      })
-
-    }
-  }
-})()
-

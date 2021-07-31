@@ -1,14 +1,13 @@
+import { get } from 'svelte/store';
 import { ENUMS } from '../enums';
 import type { Item } from '../global';
-import { ItemsStore, selectedItem } from '../store';
+import { ItemsStore } from '../stores/ItemsStore';
+import { SelectedItemStore } from '../stores/SelectedItemStore';
 import { s } from '../utils';
 
 const { DATA_ID } = ENUMS;
 
 let items = [];
-
-ItemsStore.subscribe(val => items = val)
-
 let height = 0;
 let halfHeight = 0;
 let nodesChanged = [];
@@ -91,6 +90,7 @@ const updateDepth = (item: Item, node: HTMLElement) => {
 export const DragHandler = (event, item: Item) => {
   event.preventDefault();
   event.stopPropagation();
+  if (item.id === 'body') return;
 
   holding = 1;
 
@@ -111,7 +111,8 @@ export const DragHandler = (event, item: Item) => {
       ItemsStore.hideChildren(item)
     };
 
-    selectedItem.set(item)
+    items = get(ItemsStore);
+    SelectedItemStore.set(item)
     newParentId = item.parentId;
     children = s('.left-sidebar-items').children;
     childrenLength = children.length;

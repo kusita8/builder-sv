@@ -9,6 +9,9 @@ import css from 'rollup-plugin-css-only';
 
 const production = !process.env.ROLLUP_WATCH;
 
+const onwarn = (warning, onwarn) =>
+	warning.code !== 'CIRCULAR_DEPENDENCY' && onwarn(warning);
+
 function serve() {
 	let server;
 
@@ -79,5 +82,6 @@ export default {
 	],
 	watch: {
 		clearScreen: false
-	}
+	},
+	onwarn
 };

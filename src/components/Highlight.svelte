@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { selectedItem } from "../store";
+  import { HighlightStore } from "../stores/HighlightStore";
   import { onLoad, s } from "../utils";
 
   let userSite = {} as HTMLElement;
@@ -49,7 +49,7 @@
 
   window.addEventListener("resize", () => updateCurrentItem());
 
-  selectedItem.subscribe((data) => {
+  HighlightStore.subscribe((data) => {
     if (Object.keys(data).length > 0) {
       highlightItem(data);
     } else {

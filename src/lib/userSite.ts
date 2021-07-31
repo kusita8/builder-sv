@@ -1,10 +1,18 @@
 import { ENUMS } from "../enums";
 import type { Item } from "../global";
-import { selectedItem, userSiteEvents } from "../store";
+import { HighlightStore } from "../stores/HighlightStore";
+import { SelectedItemStore } from "../stores/SelectedItemStore";
+import { UserSiteEventsStore } from "../stores/UserSiteEventsStore";
 import { createNode, onLoad, s } from "../utils";
 
 const { DATA_ID } = ENUMS;
-const { ADD_TO_PARENT, CHANGE_LOCATION, UPDATE_STYLE } = ENUMS.USER_SITE_EVENTS
+const {
+  ADD_TO_PARENT,
+  CHANGE_LOCATION,
+  UPDATE_STYLE,
+  SET_ATTRIBUTE,
+  CHANGE_NODE_TAG
+} = ENUMS.USER_SITE_EVENTS
 const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS
 
 class UserSite {
@@ -20,7 +28,7 @@ class UserSite {
       iframe.contentWindow.document.head.appendChild(style);
       this.sheet = style.sheet as CSSStyleSheet;
 
-      userSiteEvents.subscribe(value => {
+      UserSiteEventsStore.subscribe(value => {
         const { event, data } = value;
 
         switch (event) {
@@ -30,6 +38,10 @@ class UserSite {
             return this.changeLocation(data)
           case UPDATE_STYLE:
             return this.updateStyle(data)
+          case SET_ATTRIBUTE:
+            return this.setAttribute(data)
+          case CHANGE_NODE_TAG:
+            return this.changeNodeTag(data)
           default:
             return null;
         }
@@ -37,18 +49,22 @@ class UserSite {
     })
   }
 
-  private _generateNode(item) {
+  private _generateNode(item, isEmpty = true) {
+    const className = `${item.id}${isEmpty ? ` ${EMPTY_SITE_COMPONENT}` : ''}`;
+
     const node = createNode({
       [DATA_ID]: item.id,
       tag: item.tag,
-      class: EMPTY_SITE_COMPONENT
+      class: className,
+      ...item.attributes
     });
 
     item.node = node;
 
     node.addEventListener('click', e => {
       e.stopPropagation();
-      selectedItem.set(item);
+      e.preventDefault();
+      SelectedItemStore.set(item);
     });
 
     return node;
@@ -107,7 +123,7 @@ class UserSite {
       }
     }
 
-    selectedItem.update(a => a)
+    HighlightStore.refresh();
   }
 
   updateStyle({ id, style, target }) {
@@ -142,8 +158,63 @@ class UserSite {
     }
 
     // ADD NEW RULE
-    this.sheet.insertRule(this._generateCssRule(id, style, target), cssRules.length);
+    if (style) {
+      this.sheet.insertRule(this._generateCssRule(id, style, target), cssRules.length);
+    }
+  }
 
+  setAttribute({ node, attribute }: { node: HTMLElement, attribute: any }) {
+    node.setAttribute(attribute.name, attribute.value);
+  }
+
+  changeNodeTag(item: Item) {
+    const oldNode = item.node;
+    const children = [...oldNode.children];
+
+    const newUserNode = this._generateNode(item, children.length === 0);
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      newUserNode.appendChild(child);
+    }
+
+    oldNode.parentElement.replaceChild(newUserNode, oldNode)
+    item.node = newUserNode;
+  }
+
+  removeDefaultItemClass(item: Item) {
+    if (item.node.classList.contains(EMPTY_SITE_COMPONENT)) {
+      console.log('removing')
+      item.node.classList.remove(EMPTY_SITE_COMPONENT);
+      HighlightStore.refresh();
+    }
+  }
+
+  addDefaultItemClass(item: Item) {
+    if (!item.node.classList.contains(EMPTY_SITE_COMPONENT)) {
+      item.node.classList.add(EMPTY_SITE_COMPONENT);
+      HighlightStore.refresh();
+    }
+  }
+
+  updateItemInnerText(item: Item, value: string) {
+    const hasTextNode = item.node.childNodes[0] && item.node.childNodes[0].nodeValue;
+
+    if (value.length === 0 && hasTextNode) {
+      item.node.removeChild(item.node.childNodes[0]);
+      if (!item.hasChildren) this.addDefaultItemClass(item);
+      else HighlightStore.refresh();
+    } else {
+      if (hasTextNode) {
+        // already had node
+        item.node.childNodes[0].nodeValue = value;
+      } else {
+        const textNode = document.createTextNode(value);
+        item.node.insertBefore(textNode, item.node.firstChild);
+        if (!item.hasChildren) this.removeDefaultItemClass(item);
+        else HighlightStore.refresh();
+      }
+    }
   }
 }
 

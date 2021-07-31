@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ItemsStore } from "../../store";
+  import { ItemsStore } from "../../stores/ItemsStore";
   import { onLoad } from "../../utils";
   import Component from "./components/Component.svelte";
 
@@ -10,7 +10,7 @@
   });
 
   onLoad(() => {
-    ItemsStore.add(null, { label: "Body" });
+    ItemsStore.add(null, { id: "body", label: "Body" });
   });
 </script>
 
