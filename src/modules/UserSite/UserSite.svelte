@@ -46,17 +46,16 @@
 
   const { width, height } = $DimensionsStore;
   const iframeContainerStyle = `width: ${width}px;height: ${height}px;`;
-  const userSiteInnerStyle = `transform: translate3d(${
-    window.innerWidth - (width / 2) * 0.22
-  }px, 60px, 0px) scale(0.22);`;
+  // const userSiteInnerStyle = `transform: translate3d(220px, 220px, 0px) scale(0.22);`;
+  const userSiteInnerStyle = ``;
 
   let userSiteContainer;
 </script>
 
 <div class="user">
   <div class="user-site" on:mousedown={() => SelectedItemStore.set({})}>
-    <div class="lateral-scrollspace" />
-    <div class="vertical-scrollspace" />
+    <!-- <div class="lateral-scrollspace" />
+    <div class="vertical-scrollspace" /> -->
     <div class="user-site__inner" style={userSiteInnerStyle}>
       <div
         class="user-site__container"
@@ -83,7 +82,7 @@
         />
       </div>
     </div>
-    <div class="vertical-scrollspace" />
+    <!-- <div class="vertical-scrollspace" /> -->
   </div>
 </div>
 
@@ -112,15 +111,17 @@
     &__inner {
       transform-origin: 0 0 0;
       will-change: transform;
+      min-width: 150vw;
+      min-height: 150vh;
     }
 
     .user-site__container {
       display: flex;
       justify-content: center;
       align-items: center;
-      transform: translateX(-8.3%);
-      padding: 20% 0;
+      // transform: translateX(-8.3%);
       position: relative;
+      transform: scale(0.4);
 
       &:hover {
         .resize__width,
