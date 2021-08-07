@@ -20,7 +20,8 @@
 
     const scale =
       (userSite.style.transform.split(" scale(")[1].replace(/\)/, "") as any) *
-      1;
+      1 *
+      0.3;
 
     style = `
       width: ${width * scale}px;

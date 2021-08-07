@@ -39,15 +39,9 @@
     click(offsetX, offsetY);
   };
 
-  // 1 = 100vw
-  // 0.22
-  // 0.22 * x = 160
-  //
-
   const { width, height } = $DimensionsStore;
   const iframeContainerStyle = `width: ${width}px;height: ${height}px;`;
-  // const userSiteInnerStyle = `transform: translate3d(220px, 220px, 0px) scale(0.22);`;
-  const userSiteInnerStyle = ``;
+  const userSiteInnerStyle = `transform: translate3d(0px, 0px, 0px) scale(1);`;
 
   let userSiteContainer;
 </script>
@@ -113,6 +107,9 @@
       will-change: transform;
       min-width: 150vw;
       min-height: 150vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .user-site__container {
@@ -121,7 +118,7 @@
       align-items: center;
       // transform: translateX(-8.3%);
       position: relative;
-      transform: scale(0.4);
+      transform: scale(0.3);
 
       &:hover {
         .resize__width,

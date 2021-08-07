@@ -47,10 +47,12 @@ export const DragHandler = (e: MouseEvent, type: string, node: HTMLElement) => {
   const moveHandler = (e) => {
     if (type === 'width') {
       width = Math.round((startW + (e.clientX - startX) * (1 / scale)));
+      if (width <= 0) return;
       node.style.width = `${width}px`;
       DimensionsStore.setWidth(width)
     } else {
       height = Math.round((startH + (e.clientY - startY) * (1 / scale)));
+      if (height <= 0) return;
       node.style.height = `${height}px`;
       DimensionsStore.setHeigth(height)
     }

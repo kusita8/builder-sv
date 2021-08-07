@@ -1,22 +1,19 @@
+import { get } from "svelte/store";
+import { DimensionsStore } from "../stores/DimensionsStore";
 import { HighlightStore } from "../stores/HighlightStore";
-import { onLoad, s, sa } from "../utils";
+import { onLoad, s } from "../utils";
 
 let zoomArea = {} as HTMLElement
 let zoomContainer = {} as HTMLElement
-let lateralScroll = {} as HTMLElement
-let verticalScroll = [] as HTMLElement[]
-let leftSidebar = {} as HTMLElement
-let highlightLabel = {} as HTMLElement
-let userSiteBounding = { top: 0, left: 0 } as any;
-let clientX = 0;
-let clientY = 0;
-
+let userSiteBounding = { top: 0, left: 0 } as DOMRect;
 
 let oldZoom = 1;
 let currentX = 0;
 let currentY = 0;
 
 const STEP = 0.99;
+const MAX_SCALE = 2.8;
+const MIN_SCALE = 0.5;
 
 const isZooming = (e: WheelEvent) => e.deltaY && (e.ctrlKey || e.deltaY % 1 !== 0);
 
@@ -25,17 +22,14 @@ const HandleZoom = (e: WheelEvent) => {
   if (isZooming(e)) {
     e.preventDefault();
 
-    // const nz = current.zoom + (e.deltaY * -1) / 60;
-
-    // if (nz > 2 || nz < 0.2) return;
-
-    let nz = oldZoom;
+    let newZoom = oldZoom;
 
     const factor = e.deltaY;
 
-    const scaleChanged = Math.pow(STEP, factor);
+    if ((newZoom >= MAX_SCALE && factor < 0) || (newZoom <= MIN_SCALE && factor > 0)) return;
 
-    nz *= scaleChanged;
+    const scaleChanged = Math.pow(STEP, factor);
+    newZoom *= scaleChanged;
 
 
     // offset of container
@@ -48,18 +42,18 @@ const HandleZoom = (e: WheelEvent) => {
       ix = (mx - currentX) / oldZoom,
       iy = (my - currentY) / oldZoom,
       /// calculate click at new zoom
-      nx = ix * nz,
-      ny = iy * nz,
+      nx = ix * newZoom,
+      ny = iy * newZoom,
       /// move to the difference
       /// make sure we take mouse pointer offset into account!
       cx = mx - nx,
       cy = my - ny;
 
-    oldZoom = nz;
+    oldZoom = newZoom;
     currentX = cx;
     currentY = cy;
 
-    const transform = `translate3D(${cx}px, ${cy}px, 0px) scale(${nz})`
+    const transform = `translate3D(${cx}px, ${cy}px, 0px) scale(${newZoom})`
 
     zoomContainer.style.transform = transform;
 
@@ -74,38 +68,35 @@ const HandleZoom = (e: WheelEvent) => {
 }
 
 const centerZoomArea = () => {
-  zoomArea.scrollTop = window.innerHeight * 0.75;
-  zoomArea.scrollLeft = window.innerWidth - userSiteBounding.width / 2;
+  const { width, height } = get(DimensionsStore)
+
+  zoomArea.scrollTop = userSiteBounding.height / 2 - (height * .3) / 2;
+  zoomArea.scrollLeft = userSiteBounding.width / 2 + (width * .3) / 2;
 }
 
 onLoad(() => {
   zoomArea = s('.user-site');
   zoomContainer = s('.user-site__inner');
-  lateralScroll = s('.lateral-scrollspace');
-  verticalScroll = sa('.vertical-scrollspace') as any;
-  leftSidebar = s('.left-sidebar');
-  highlightLabel = s('.highlight__label');
-  userSiteBounding = zoomArea.getBoundingClientRect()
+  userSiteBounding = zoomArea.getBoundingClientRect();
+
+  const leftSidebar = s('.left-sidebar');
+  const rightSidebar = s('.right-sidebar');
 
   const events = ['mousewheel', 'resize', 'wheel'];
   events.forEach(ev => {
     zoomArea.addEventListener(ev, (e: WheelEvent) => { HandleZoom(e) }, { passive: false });
     window.addEventListener(ev, e => { e.preventDefault(); }, { passive: false });
     leftSidebar.addEventListener(ev, (e: MouseEvent) => {
-      !isZooming(e as WheelEvent) ? e.stopPropagation() : ''
-    }
-      , { passive: false });
+      if (!isZooming(e as WheelEvent)) {
+        e.stopPropagation();
+      }
+    }, { passive: false });
+    rightSidebar.addEventListener(ev, (e: MouseEvent) => {
+      if (!isZooming(e as WheelEvent)) {
+        e.stopPropagation();
+      }
+    }, { passive: false });
   });
-
-  (window as any).HandleZoom = HandleZoom;
-
-  // document.addEventListener('mousemove', e => {
-  //   clientX = e.pageX
-  //   clientY = e.pageY
-  // })
-
-  document.addEventListener('custom:event', function (event) { alert('gotcha'); });
-
 
   centerZoomArea();
 });
