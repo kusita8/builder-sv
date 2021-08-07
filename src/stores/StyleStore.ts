@@ -11,13 +11,12 @@ const {
 export const StyleStore = (() => {
   const store = writable({} as StyleStoreItem);
   const { subscribe, update } = store;
-  const classNamesCount = {}
+  let classNamesCount = 0;
 
-  const getClassName = (item) => {
-    const items = classNamesCount[item.tag] || [];
-    items.push(item.id);
-    classNamesCount[item.tag] = items;
-    return items.length;
+  const getClassName = (item: Item) => {
+    classNamesCount++;
+    item.className = `element-${classNamesCount}`;
+    return item.className;
   }
 
   return {
@@ -27,19 +26,24 @@ export const StyleStore = (() => {
 
       const className = item.className || getClassName(item);
 
+      if (style) {
+        item.node.classList.add(className);
+      }
+
       update(store => {
         if (style) {
           // overwriting style for rule because user will be editing it
-          store[item.id] = {
-            ...store[item.id],
+          store[className] = {
+            ...store[className],
             [target]: style
           }
-        } else if (store[item.id] && store[item.id][target]) {
+        } else if (store[className] && store[className][target]) {
           // if style is empty
-          if (Object.keys(store[item.id]).length === 1) {
-            delete store[item.id];
+          if (Object.keys(store[className]).length === 1) {
+            item.node.classList.remove(className);
+            delete store[className];
           } else {
-            delete store[item.id][target];
+            delete store[className][target];
           }
         }
 
@@ -47,8 +51,8 @@ export const StyleStore = (() => {
         UserSiteEventsStore.set({
           event: UPDATE_STYLE as keyof typeof ENUMS.USER_SITE_EVENTS,
           data: {
-            id: item.id,
-            style: store[item.id][target],
+            className,
+            style: store[className] && store[className][target],
             target,
           }
         });
@@ -60,14 +64,18 @@ export const StyleStore = (() => {
       })
 
     },
-    get: (id: string, target: any) => {
+    get: (className: string, target: any) => {
       const styles = get(store);
 
-      if (styles[id] && styles[id][target.media]) {
-        return styles[id][target.media]
+      if (styles[className] && styles[className][target.media]) {
+        return styles[className][target.media]
       }
 
       return ''
+    },
+    addClassName: (item: Item) => {
+      const className = getClassName(item);
+      item.node.classList.add(className);
     }
   }
 })();

@@ -1,3 +1,4 @@
+import { get } from "svelte/store";
 import { DimensionsStore } from "../../stores/DimensionsStore";
 import { HighlightStore } from "../../stores/HighlightStore";
 
@@ -9,6 +10,7 @@ const HandleMouseUp = () => {
 }
 
 export const DragHandler = (e: MouseEvent, type: string, node: HTMLElement) => {
+  e.stopPropagation();
   holding = 1;
   document.addEventListener("mouseup", HandleMouseUp);
 
@@ -29,13 +31,14 @@ export const DragHandler = (e: MouseEvent, type: string, node: HTMLElement) => {
     height
 
   const SetUpDrag = () => {
+    const dimensions = get(DimensionsStore)
     scale = node.getBoundingClientRect().width / node.offsetWidth;
     startY = e.clientY
     startX = e.clientX
-    startW = node.getAttribute('width') as any * 1
-    startH = node.getAttribute('height') as any * 1
-    width = startW,
-      height = startH
+    startW = dimensions.width
+    startH = dimensions.height
+    width = startW
+    height = startH
 
     document.addEventListener("mousemove", moveHandler, true);
     document.addEventListener("mouseup", upHandler, true);
@@ -56,9 +59,6 @@ export const DragHandler = (e: MouseEvent, type: string, node: HTMLElement) => {
   }
 
   const upHandler = () => {
-    node.setAttribute('width', width + '');
-    node.setAttribute('height', height + '');
-
     document.removeEventListener("mousemove", moveHandler, true);
     document.removeEventListener("mouseup", upHandler, true);
   }

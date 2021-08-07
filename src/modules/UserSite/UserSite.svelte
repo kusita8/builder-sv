@@ -39,24 +39,27 @@
     click(offsetX, offsetY);
   };
 
-  const width = $DimensionsStore.width;
-  const height = $DimensionsStore.height;
+  // 1 = 100vw
+  // 0.22
+  // 0.22 * x = 160
+  //
+
+  const { width, height } = $DimensionsStore;
   const iframeContainerStyle = `width: ${width}px;height: ${height}px;`;
+  const userSiteInnerStyle = `transform: translate3d(${
+    window.innerWidth - (width / 2) * 0.22
+  }px, 60px, 0px) scale(0.22);`;
 
   let userSiteContainer;
 </script>
 
 <div class="user">
-  <div class="user-site" on:click={() => SelectedItemStore.set({})}>
-    <div class="user-site-scrollspace" />
-    <div
-      class="user-site__inner"
-      style="transform: translate3d(220px, 220px, 0px) scale(0.22);"
-    >
+  <div class="user-site" on:mousedown={() => SelectedItemStore.set({})}>
+    <div class="lateral-scrollspace" />
+    <div class="vertical-scrollspace" />
+    <div class="user-site__inner" style={userSiteInnerStyle}>
       <div
         class="user-site__container"
-        {height}
-        {width}
         style={iframeContainerStyle}
         bind:this={userSiteContainer}
       >
@@ -80,6 +83,7 @@
         />
       </div>
     </div>
+    <div class="vertical-scrollspace" />
   </div>
 </div>
 
@@ -93,35 +97,35 @@
       inset 0 0 0 1px rgb(255 255 255 / 30%);
   }
 
+  .user {
+    flex-basis: 60%;
+    min-width: 60%;
+    position: relative;
+  }
+
   .user-site {
     background: #f1f1f1;
-    position: absolute;
-    left: 20%;
-    width: 60%;
-    height: calc(100vh - var(--header-height));
-    top: var(--header-height);
+    max-height: 100%;
     overflow: scroll;
     border: 1px solid black;
 
     &__inner {
-      position: relative;
       transform-origin: 0 0 0;
       will-change: transform;
-      margin-left: 1000px;
+    }
 
-      .user-site__container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transform: translateX(-8.3%);
-        padding: 20% 0;
-        position: relative;
+    .user-site__container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: translateX(-8.3%);
+      padding: 20% 0;
+      position: relative;
 
-        &:hover {
-          .resize__width,
-          .resize__height {
-            opacity: 1;
-          }
+      &:hover {
+        .resize__width,
+        .resize__height {
+          opacity: 1;
         }
       }
     }
@@ -147,9 +151,13 @@
     user-select: none;
   }
 
-  .user-site-scrollspace {
+  .lateral-scrollspace {
     width: 200vw;
     height: 1px;
+  }
+  .vertical-scrollspace {
+    height: 100vh;
+    width: 1px;
   }
 
   .resize {

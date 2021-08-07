@@ -10,7 +10,7 @@
   });
 
   onLoad(() => {
-    ItemsStore.add(null, { id: "body", label: "Body" });
+    ItemsStore.add(null, { defaultId: "body", label: "Body" });
   });
 </script>
 
@@ -25,6 +25,7 @@
 <style>
   .left-sidebar {
     flex-basis: 20%;
+    min-width: 20%;
     background: white;
     overflow-y: scroll;
     height: 100%;

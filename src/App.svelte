@@ -10,6 +10,7 @@
 <main class="app">
 	<div class="app__inner">
 		<Left />
+		<UserSite />
 		<Right />
 		<Highlight />
 	</div>
@@ -23,7 +24,6 @@
 		spellcheck="false"
 	/>
 </main>
-<UserSite />
 
 <style type="text/scss">
 	:global(:root) {
@@ -33,7 +33,7 @@
 	.app {
 		&__inner {
 			display: flex;
-			justify-content: space-between;
+			// justify-content: space-between;
 			height: calc(100vh - var(--header-height));
 		}
 	}

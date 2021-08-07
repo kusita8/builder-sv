@@ -243,10 +243,12 @@ export const DragHandler = (event, item: Item) => {
     // add in array
     const newElPositon = elementIndex + (previousNodesAffected * previousSign);
 
-    if (newParentId) {
-      Item.parentId = newParentId;
+    if (item.parentId !== newParentId || elementIndex !== newElPositon) {
+      if (newParentId) {
+        Item.parentId = newParentId;
+      }
+      ItemsStore.insertInPosition(Item, elementIndex, newElPositon);
     }
-    ItemsStore.insertInPosition(Item, elementIndex, newElPositon);
 
     // reset variables
     nodesChanged = [];

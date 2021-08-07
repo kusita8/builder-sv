@@ -3,6 +3,14 @@ import './lib/zoom'
 import './lib/userSite'
 import './lib/selectedItemInput'
 
+// ONLY ON DEVELOPMENT:
+import './stores/AddStore'
+import './stores/DimensionsStore'
+import './stores/HighlightStore'
+import './stores/ItemsStore'
+import './stores/StyleStore'
+import './stores/UserSiteEventsStore'
+
 const app = new App({
 	target: document.body,
 });

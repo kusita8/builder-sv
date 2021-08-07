@@ -3,7 +3,7 @@ import type { Item } from "../global";
 import { HighlightStore } from "../stores/HighlightStore";
 import { SelectedItemStore } from "../stores/SelectedItemStore";
 import { UserSiteEventsStore } from "../stores/UserSiteEventsStore";
-import { createNode, onLoad, s } from "../utils";
+import { createNode, getClass, onLoad, s } from "../utils";
 
 const { DATA_ID } = ENUMS;
 const {
@@ -18,6 +18,9 @@ const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS
 class UserSite {
   body: HTMLBodyElement;
   sheet: CSSStyleSheet;
+  isMutating = false;
+  currentMutationNode = null;
+  mutationBacklog = [];
 
   constructor() {
     onLoad(() => {
@@ -46,11 +49,26 @@ class UserSite {
             return null;
         }
       });
+
+      const observer = new MutationObserver(() => {
+        if (this.body.contains(this.currentMutationNode)) {
+          this.isMutating = false;
+          this.currentMutationNode = null;
+          if (this.mutationBacklog.length > 0) {
+            this.mutationBacklog.shift()();
+          }
+        }
+      })
+
+      observer.observe(this.body, { attributes: true, childList: true, subtree: true })
     })
   }
 
   private _generateNode(item, isEmpty = true) {
-    const className = `${item.id}${isEmpty ? ` ${EMPTY_SITE_COMPONENT}` : ''}`;
+    const className = getClass(
+      isEmpty && EMPTY_SITE_COMPONENT,
+      item.className
+    )
 
     const node = createNode({
       [DATA_ID]: item.id,
@@ -70,14 +88,15 @@ class UserSite {
     return node;
   }
 
-  private _generateCssRule(id, style, target) {
-    const rule = `.${id}{${style}}`;
+  private _generateCssRule(className, style, target) {
+    const rule = `.${className}{${style}}`;
     if (target === 'ALL') {
       return rule
     } else {
       return `@media ${target}{${rule}}`
     }
   }
+
 
   addToParent(item: Item) {
     const node = this._generateNode(item)
@@ -119,22 +138,21 @@ class UserSite {
         }
 
         trueSibling.parentElement.insertBefore(item.node, trueSibling.nextSibling);
-
       }
     }
 
     HighlightStore.refresh();
   }
 
-  updateStyle({ id, style, target }) {
+  updateStyle({ className, style, target }) {
     const cssRules = this.sheet.cssRules;
-    const className = `.${id}`;
+    const currentClass = `.${className}`;
 
     const checkRules = (cssRules, deleteRule) => {
       for (let i = 0; i < cssRules.length; i++) {
         const rule = cssRules[i];
 
-        if (rule.selectorText === className) {
+        if (rule.selectorText === currentClass) {
           if (deleteRule) {
             this.sheet.deleteRule(i)
           }
@@ -159,7 +177,7 @@ class UserSite {
 
     // ADD NEW RULE
     if (style) {
-      this.sheet.insertRule(this._generateCssRule(id, style, target), cssRules.length);
+      this.sheet.insertRule(this._generateCssRule(className, style, target), cssRules.length);
     }
   }
 
@@ -168,15 +186,26 @@ class UserSite {
   }
 
   changeNodeTag(item: Item) {
+    if (this.isMutating) {
+      this.mutationBacklog.push(() => this.changeNodeTag(item));
+      return;
+    }
+
+    this.isMutating = true;
+
     const oldNode = item.node;
     const children = [...oldNode.children];
 
     const newUserNode = this._generateNode(item, children.length === 0);
 
+    this.currentMutationNode = newUserNode;
+
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       newUserNode.appendChild(child);
     }
+
+    if (item.tag === 'img') this.removeDefaultItemClass(item);
 
     oldNode.parentElement.replaceChild(newUserNode, oldNode)
     item.node = newUserNode;
@@ -184,7 +213,6 @@ class UserSite {
 
   removeDefaultItemClass(item: Item) {
     if (item.node.classList.contains(EMPTY_SITE_COMPONENT)) {
-      console.log('removing')
       item.node.classList.remove(EMPTY_SITE_COMPONENT);
       HighlightStore.refresh();
     }

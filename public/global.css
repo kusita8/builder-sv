@@ -9,6 +9,7 @@
 body {
 	overflow: hidden;
 	font-family: -apple-system, Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	overscroll-behavior-x: none;
 }
 
 a {

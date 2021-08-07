@@ -33,6 +33,7 @@ export const getId = (): string => {
 }
 
 export const s = (sel) => document.querySelector(sel)
+export const sa = (sel) => document.querySelectorAll(sel)
 
 export const onLoad = (cb) => {
   window.addEventListener('load', cb)
@@ -62,3 +63,5 @@ export const closeOnOutsideClick = (className: string, cb: Function) => {
   }
   window.addEventListener('click', handleClickOutside, true)
 }
+
+export const getClass = (...args: string[]) => args.filter(Boolean).join(' ');

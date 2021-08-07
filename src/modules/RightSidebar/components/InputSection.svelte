@@ -18,9 +18,22 @@
 
 <SectionContainer label={data.label}>
   {#if !data.big}
-    <input {...inputGlobalAttrs} on:input bind:value type="text" />
+    <input
+      {...inputGlobalAttrs}
+      on:input
+      bind:value
+      type="text"
+      autocomplete="off"
+    />
   {:else}
-    <textarea {...inputGlobalAttrs} on:input bind:value cols="30" rows="10" />
+    <textarea
+      {...inputGlobalAttrs}
+      on:input
+      bind:value
+      cols="30"
+      rows="10"
+      autocomplete="off"
+    />
   {/if}
 </SectionContainer>
 

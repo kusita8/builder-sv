@@ -1,10 +1,11 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import type { Attribute, Item } from "../global";
 import { ENUMS } from '../enums';
 import selectedItemInput from "../lib/selectedItemInput";
 import { ItemsStore } from './ItemsStore'
 import { HighlightStore } from './HighlightStore'
 import { UserSiteEventsStore } from './UserSiteEventsStore'
+import { StyleStore } from "./StyleStore";
 
 const {
   SET_ATTRIBUTE,
@@ -24,6 +25,14 @@ export const SelectedItemStore = (() => {
     })
   }
 
+  const updateComponents = (item, cb) => {
+    get(ItemsStore).forEach(el => {
+      if (el.id !== item.id && el.className === item.className) {
+        cb(el);
+      }
+    })
+  }
+
   return {
     subscribe,
     set: (item: Item | {}) => {
@@ -32,8 +41,13 @@ export const SelectedItemStore = (() => {
       selectedItemInput.set(item as Item);
     },
     setValue: (key: keyof Item, val: any) => {
-      updateSelected(item => {
-        item[key] = val;
+      update(item => {
+        const mutations = item => {
+          item[key] = val;
+        }
+        mutations(item);
+
+        if (key === 'label' && item.isComponent) updateComponents(item, mutations)
 
         // refresh items store
         ItemsStore.refresh();
@@ -59,13 +73,29 @@ export const SelectedItemStore = (() => {
     },
     setTag: (newTag) => {
       updateSelected((item: Item) => {
-        item.tag = newTag;
+        const mutations = (item) => {
+          item.tag = newTag;
 
-        // send to user site
-        UserSiteEventsStore.set({
-          event: CHANGE_NODE_TAG as keyof typeof ENUMS.USER_SITE_EVENTS,
-          data: item
-        })
+          // send to user site
+          UserSiteEventsStore.set({
+            event: CHANGE_NODE_TAG as keyof typeof ENUMS.USER_SITE_EVENTS,
+            data: item
+          })
+        }
+        mutations(item);
+
+        if (item.isComponent) updateComponents(item, mutations)
+
+        return item;
+      })
+    },
+    setAsComponent: () => {
+      update(item => {
+        item.isComponent = true
+
+        if (!item.className) {
+          StyleStore.addClassName(item);
+        }
 
         return item;
       })

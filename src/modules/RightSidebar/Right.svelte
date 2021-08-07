@@ -37,10 +37,11 @@
   };
 
   const handleOnComponentCheckbox = () => {
+    SelectedItemStore.setAsComponent();
     AddStore.addComponent($SelectedItemStore);
   };
 
-  $: style = StyleStore.get($SelectedItemStore.id, target);
+  $: style = StyleStore.get($SelectedItemStore.className, target);
 </script>
 
 <aside class="right-sidebar">
@@ -50,6 +51,7 @@
         <CheckboxSection
           on:change={handleOnComponentCheckbox}
           label="Use as component"
+          checked={$SelectedItemStore.isComponent}
         />
         <TargetSection
           on:select={handleOnTargetSelect}
@@ -95,8 +97,10 @@
 <style type="text/scss">
   .right-sidebar {
     flex-basis: 20%;
+    min-width: 20%;
     background: white;
     z-index: 2;
+    overflow-y: scroll;
 
     .right-sidebar__inner {
       padding-top: 20px;

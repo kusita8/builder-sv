@@ -13,6 +13,7 @@
     height: var(--header-height);
     background: rgb(100, 100, 100);
     position: relative;
+    z-index: 10;
   }
   /* your styles go here */
 </style>

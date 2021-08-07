@@ -32,14 +32,19 @@ export const ItemsStore = (() => {
     add: (parent?: Item, item = {} as any) => {
       const newItem = {
         depth: 1,
-        id: getId(),
+        id: item.defaultId || getId(),
         tag: item.tag || 'div',
         label: item.label || 'Div',
         attributes: item.attributes || {},
-        showingChildren: true,
+        isComponent: item.isComponent || false,
         hasChildren: false,
+        showingChildren: true,
         node: null,
         parentId: null,
+      } as Item
+
+      if (item.className) {
+        newItem.className = item.className;
       }
 
       update((items) => {
@@ -105,11 +110,8 @@ export const ItemsStore = (() => {
       delete hiddenChildren[parent.id];
     },
     insertInPosition: (item, prevIndex, newIndex) => {
-
-      if (prevIndex === newIndex) return;
-
       update(items => {
-        const dir = prevIndex > newIndex ? -1 : 0;
+        const dir = prevIndex < newIndex ? 0 : -1;
         const leftSibling = items[newIndex + dir];
 
         const prevItem = items.splice(prevIndex, 1);

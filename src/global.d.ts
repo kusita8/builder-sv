@@ -15,6 +15,7 @@ export interface Item {
   node: HTMLElement | null;
   hasChildren: boolean;
   showingChildren: boolean;
+  isComponent: boolean;
   attributes: Attribute | {}
   className?: string;
 }
