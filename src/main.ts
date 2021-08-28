@@ -2,6 +2,7 @@ import App from './App.svelte';
 import './lib/zoom'
 import './lib/userSite'
 import './lib/selectedItemInput'
+import './lib/keyboard'
 
 // ONLY ON DEVELOPMENT:
 import './stores/AddStore'

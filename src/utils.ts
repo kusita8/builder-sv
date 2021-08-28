@@ -65,3 +65,40 @@ export const closeOnOutsideClick = (className: string, cb: Function) => {
 }
 
 export const getClass = (...args: string[]) => args.filter(Boolean).join(' ');
+
+export const downloadString = (filename, content) => {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+  element.setAttribute('download', filename);
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+export const mouseEventFromPoint = (x, y, event, domView) => {
+  const ev = document.createEvent("MouseEvent");
+  const el = domView.elementFromPoint(x, y);
+
+  if (!el) return;
+
+  ev.initMouseEvent(
+    event,
+    true /* bubble */,
+    true /* cancelable */,
+    window,
+    null,
+    x,
+    y,
+    0,
+    0 /* coordinates */,
+    false,
+    false,
+    false,
+    false /* modifier keys */,
+    0 /*left*/,
+    null
+  );
+
+  el.dispatchEvent(ev);
+}

@@ -28,6 +28,7 @@ class UserSite {
       this.body = iframe.contentWindow.document.body as HTMLBodyElement;
 
       const style = document.createElement("style");
+      style.id = 'mainstyles';
       iframe.contentWindow.document.head.appendChild(style);
       this.sheet = style.sheet as CSSStyleSheet;
 
@@ -85,6 +86,12 @@ class UserSite {
       SelectedItemStore.set(item);
     });
 
+    node.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      e.preventDefault();
+      SelectedItemStore.setInput(item);
+    });
+
     return node;
   }
 
@@ -97,6 +104,12 @@ class UserSite {
     }
   }
 
+  private _getIframeHTML(iframeDocument) {
+    let html = '<!DOCTYPE html><html lang="en">';
+    html += `<head>${iframeDocument.head.innerHTML}</head>`;
+    html += `<body>${iframeDocument.body.innerHTML}</body>`;
+    return html
+  }
 
   addToParent(item: Item) {
     const node = this._generateNode(item)
@@ -146,7 +159,18 @@ class UserSite {
 
   updateStyle({ className, style, target }) {
     const cssRules = this.sheet.cssRules;
+
+    this.deleteItemCssRules(className, target);
+
+    // ADD NEW RULE
+    if (style) {
+      this.sheet.insertRule(this._generateCssRule(className, style, target), cssRules.length);
+    }
+  }
+
+  deleteItemCssRules(className: string, target?: string) {
     const currentClass = `.${className}`;
+    const cssRules = this.sheet.cssRules;
 
     const checkRules = (cssRules, deleteRule) => {
       for (let i = 0; i < cssRules.length; i++) {
@@ -161,10 +185,7 @@ class UserSite {
       }
     };
 
-    // DELETE PREVIOUS RULE
-    if (target === 'ALL') {
-      checkRules(cssRules, true)
-    } else {
+    const checkMediaRules = () => {
       for (let i = 0; i < cssRules.length; i++) {
         const rule = cssRules[i] as any;
 
@@ -175,9 +196,24 @@ class UserSite {
       }
     }
 
-    // ADD NEW RULE
-    if (style) {
-      this.sheet.insertRule(this._generateCssRule(className, style, target), cssRules.length);
+    if (!target) {
+      // delete all rules
+      checkRules(cssRules, true);
+      checkMediaRules();
+    } else if (target === 'ALL') {
+      checkRules(cssRules, true)
+    } else {
+      checkMediaRules();
+    }
+  }
+
+  deleteItem(item) {
+    if (item.className) this.deleteItemCssRules(item.className);
+    const parent = item.node.parentNode;
+    parent.removeChild(item.node);
+
+    if (!parent.firstChild) {
+      parent.classList.add(EMPTY_SITE_COMPONENT);
     }
   }
 
@@ -243,6 +279,33 @@ class UserSite {
         else HighlightStore.refresh();
       }
     }
+  }
+
+  generateHTML() {
+    const iframeDocument = s('#user-site').contentWindow.document;
+
+    const iframeCopy = document.createElement("iframe");
+    document.body.appendChild(iframeCopy);
+
+    const iframeCopyDocument = iframeCopy.contentWindow.document;
+    iframeCopyDocument.head.innerHTML = iframeDocument.head.innerHTML;
+    iframeCopyDocument.body.innerHTML = iframeDocument.body.innerHTML;
+
+    const styles = Object.values(this.sheet.cssRules).reduce((acc, cur) => acc += cur.cssText, '');
+    const iframeCopyStyleTag = iframeCopyDocument.querySelector('#mainstyles');
+    iframeCopyStyleTag.innerHTML = styles;
+    iframeCopyStyleTag.removeAttribute('id');
+
+    // remove data id and empty class
+    iframeCopyDocument.body.querySelectorAll('[data-id]').forEach(node => {
+      node.removeAttribute('data-id');
+      node.classList.remove(EMPTY_SITE_COMPONENT)
+      if (!node.className) {
+        node.removeAttribute('class');
+      }
+    })
+
+    return this._getIframeHTML(iframeCopyDocument);
   }
 }
 

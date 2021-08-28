@@ -72,7 +72,8 @@
 
     &__item {
       padding: 5px 10px;
-      background: thistle;
+      background: black;
+      color: white;
       cursor: pointer;
 
       &:not(:first-child) {

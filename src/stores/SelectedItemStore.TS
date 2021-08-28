@@ -13,7 +13,8 @@ const {
 } = ENUMS.USER_SITE_EVENTS
 
 export const SelectedItemStore = (() => {
-  const { subscribe, update, set } = writable({} as Item);
+  const store = writable({} as Item);
+  const { subscribe, update, set } = store;
 
   const updateSelected = (cb) => {
     update(item => {
@@ -36,9 +37,13 @@ export const SelectedItemStore = (() => {
   return {
     subscribe,
     set: (item: Item | {}) => {
-      set(item as Item);
-      HighlightStore.set(item);
-      selectedItemInput.set(item as Item);
+      if (get(store).id !== (item as Item).id) {
+        set(item as Item);
+        HighlightStore.set(item);
+      }
+    },
+    setInput: (item?: Item) => {
+      selectedItemInput.set(item || get(store));
     },
     setValue: (key: keyof Item, val: any) => {
       update(item => {
@@ -99,6 +104,7 @@ export const SelectedItemStore = (() => {
 
         return item;
       })
-    }
+    },
+
   }
 })();

@@ -3,6 +3,8 @@ import type { Item } from "../global";
 import { UserSiteEventsStore } from "./UserSiteEventsStore";
 import { getId } from "../utils";
 import { ENUMS } from '../enums';
+import { SelectedItemStore } from "./SelectedItemStore";
+import userSite from "../lib/userSite";
 
 const {
   ADD_TO_PARENT,
@@ -148,5 +150,17 @@ export const ItemsStore = (() => {
         return items;
       })
     },
+    delete: (item) => {
+      if (item.id === 'body') return;
+
+      update(items => {
+        SelectedItemStore.set({});
+
+        userSite.deleteItem(item)
+
+
+        return items.filter(el => el.id !== item.id)
+      });
+    }
   }
 })();

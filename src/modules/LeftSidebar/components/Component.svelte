@@ -21,11 +21,10 @@
 
   const handleLabelChange = (e) => {
     e.stopPropagation();
+    if (!selected) selectComponent();
     const value = e.target.value;
     data["label"] = value;
-    if (selected) {
-      SelectedItemStore.setValue("label", value);
-    }
+    SelectedItemStore.setValue("label", value);
   };
 
   const addChildren = (e) => {
@@ -50,7 +49,7 @@
   data-id={data.id}
   {style}
   class="component"
-  on:click={selectComponent}
+  on:click={() => selectComponent()}
   on:mousedown={(e) => DragHandler(e, data)}
 >
   <div class="component__inner">

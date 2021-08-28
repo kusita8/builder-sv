@@ -1,42 +1,17 @@
 <script lang="ts">
   import { DimensionsStore } from "../../stores/DimensionsStore";
   import { SelectedItemStore } from "../../stores/SelectedItemStore";
+  import { mouseEventFromPoint } from "../../utils";
   import { DragHandler } from "./Resize";
 
   let iframe = {} as HTMLIFrameElement;
 
-  const click = (x, y) => {
-    var ev = document.createEvent("MouseEvent");
-    var el = iframe.contentWindow.document.elementFromPoint(x, y);
-
-    if (!el) return;
-
-    ev.initMouseEvent(
-      "click",
-      true /* bubble */,
-      true /* cancelable */,
-      window,
-      null,
-      x,
-      y,
-      0,
-      0 /* coordinates */,
-      false,
-      false,
-      false,
-      false /* modifier keys */,
-      0 /*left*/,
-      null
-    );
-    el.dispatchEvent(ev);
-  };
-
-  const handleClick = (e) => {
+  const handleEvent = (e, event) => {
     e.stopPropagation();
 
     const { offsetX, offsetY } = e;
 
-    click(offsetX, offsetY);
+    mouseEventFromPoint(offsetX, offsetY, event, iframe.contentWindow.document);
   };
 
   const { width, height } = $DimensionsStore;
@@ -48,13 +23,13 @@
 
 <div class="user">
   <div class="user-site" on:mousedown={() => SelectedItemStore.set({})}>
-    <!-- <div class="lateral-scrollspace" />
-    <div class="vertical-scrollspace" /> -->
     <div class="user-site__inner" style={userSiteInnerStyle}>
       <div
         class="user-site__container"
         style={iframeContainerStyle}
         bind:this={userSiteContainer}
+        on:click|stopPropagation
+        on:mousedown|stopPropagation
       >
         <div class="resize">
           <div
@@ -66,13 +41,16 @@
             on:mousedown={(e) => DragHandler(e, "height", userSiteContainer)}
           />
         </div>
-        <div class="user-site__cover" on:click={handleClick} />
+        <div
+          class="user-site__cover"
+          on:dblclick={(e) => handleEvent(e, "dblclick")}
+          on:click={(e) => handleEvent(e, "click")}
+        />
         <iframe
           bind:this={iframe}
           src="./iframe.html"
           title="user site"
           id="user-site"
-          on:click={(e) => e.stopPropagation()}
         />
       </div>
     </div>
