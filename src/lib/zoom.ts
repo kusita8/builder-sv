@@ -15,7 +15,9 @@ const STEP = 0.99;
 const MAX_SCALE = 2.8;
 const MIN_SCALE = 0.5;
 
-const isZooming = (e: WheelEvent) => e.deltaY && (e.ctrlKey || e.deltaY % 1 !== 0);
+const isZooming = (e: WheelEvent) =>
+   e.deltaY && (e.ctrlKey || e.deltaY % 1 !== 0) && e.metaKey
+
 
 const HandleZoom = (e: WheelEvent) => {
 
@@ -64,7 +66,7 @@ const HandleZoom = (e: WheelEvent) => {
   setTimeout(() => {
     // refresh selected item to refresh highlight
     HighlightStore.refresh();
-  }, 20)
+  }, 200)
 }
 
 const centerZoomArea = () => {

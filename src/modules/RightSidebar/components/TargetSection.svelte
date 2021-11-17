@@ -2,6 +2,7 @@
   import Select from "../../../components/Select.svelte";
   import SectionContainer from "./SectionContainer.svelte";
   import { createEventDispatcher } from "svelte";
+  import { TargetsStore } from "../../../stores/TargetsStore";
 
   interface Data {
     label?: string;
@@ -16,28 +17,13 @@
 
   const dispatch = createEventDispatcher();
 
-  const targets = [
-    {
-      media: "ALL",
-      copy: "ALL",
-    },
-    {
-      media: "(max-width: 400px)",
-      copy: "Max width: 400px",
-    },
-    {
-      media: "",
-      copy: "Add custom...",
-    },
-  ];
-
   const handleOnSelect = (e) => {
-    const selectedIndex = targets.findIndex((el) => el.copy === e.detail);
+    const selectedIndex = $TargetsStore.findIndex((el) => el.copy === e.detail);
 
-    if (selectedIndex === targets.length - 1) {
+    if (selectedIndex === $TargetsStore.length - 1) {
       addCustomTarget = true;
     } else {
-      dispatch("select", targets[selectedIndex]);
+      dispatch("select", $TargetsStore[selectedIndex]);
     }
   };
 
@@ -77,12 +63,14 @@
       media: values.media,
     };
 
-    const previousIndex = targets.findIndex((el) => el.media === values.media);
-    if (previousIndex === -1) {
-      targets.splice(targets.length - 1, 0, newTarget);
-    } else {
-      targets.splice(previousIndex, 1, newTarget);
-    }
+    const previousIndex = $TargetsStore.findIndex(
+      (el) => el.media === values.media
+    );
+
+    TargetsStore.add(
+      newTarget,
+      previousIndex === -1 ? $TargetsStore.length - 1 : previousIndex
+    );
 
     addCustomTarget = false;
     dispatch("select", newTarget);
@@ -95,7 +83,7 @@
   <Select
     on:select={handleOnSelect}
     data={{
-      options: targets.map((el) => el.copy),
+      options: $TargetsStore.map((el) => el.copy),
       selected: data.selected.copy,
     }}
   />

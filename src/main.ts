@@ -1,3 +1,4 @@
+import './styles/global.scss'
 import App from './App.svelte';
 import './lib/zoom'
 import './lib/userSite'

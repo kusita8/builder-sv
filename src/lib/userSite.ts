@@ -305,7 +305,9 @@ class UserSite {
       }
     })
 
-    return this._getIframeHTML(iframeCopyDocument);
+    const html = this._getIframeHTML(iframeCopyDocument);
+    document.body.removeChild(iframeCopy)
+    return html
   }
 }
 

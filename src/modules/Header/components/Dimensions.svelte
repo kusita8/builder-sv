@@ -24,6 +24,7 @@
     justify-content: center;
     align-items: center;
     color: white;
+    font-size: 1.4rem;
 
     &__inner,
     &__item {

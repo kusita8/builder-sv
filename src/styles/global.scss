@@ -34,8 +34,18 @@ textarea {
 
 .flex {
 	display: flex;
+
+  &.jc-sb {
+    justify-content: space-between;
+  }
+
+  &.jc-c {
+    justify-content: center;
+  }
 }
 
-.flex.jc-sb {
-	justify-content: space-between;
+@for $i from 1 through 10 {
+  .flex.gap-#{$i} {
+    gap: #{$i}rem;
+  }
 }

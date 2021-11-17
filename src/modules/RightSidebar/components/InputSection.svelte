@@ -24,6 +24,7 @@
       bind:value
       type="text"
       autocomplete="off"
+      spellcheck="false"
     />
   {:else}
     <textarea
@@ -33,6 +34,7 @@
       cols="30"
       rows="10"
       autocomplete="off"
+      spellcheck="false"
     />
   {/if}
 </SectionContainer>

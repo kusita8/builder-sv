@@ -28,7 +28,8 @@
         class="user-site__container"
         style={iframeContainerStyle}
         bind:this={userSiteContainer}
-        on:click|stopPropagation
+        on:click={(e) => handleEvent(e, "click")}
+        on:dblclick={(e) => handleEvent(e, "dblclick")}
         on:mousedown|stopPropagation
       >
         <div class="resize">
@@ -41,11 +42,7 @@
             on:mousedown={(e) => DragHandler(e, "height", userSiteContainer)}
           />
         </div>
-        <div
-          class="user-site__cover"
-          on:dblclick={(e) => handleEvent(e, "dblclick")}
-          on:click={(e) => handleEvent(e, "click")}
-        />
+        <!-- <div class="user-site__cover" /> -->
         <iframe
           bind:this={iframe}
           src="./iframe.html"
@@ -113,6 +110,12 @@
     top: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
+    visibility: hidden;
+    &.inactive {
+      pointer-events: none;
+      visibility: hidden;
+    }
   }
 
   #user-site {

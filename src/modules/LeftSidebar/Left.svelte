@@ -27,7 +27,7 @@
     flex-basis: 20%;
     min-width: 20%;
     background: white;
-    overflow-y: scroll;
+    overflow-y: auto;
     height: 100%;
     z-index: 2;
     padding-bottom: 40px;

@@ -35,3 +35,8 @@ export interface Dimensions {
   width: number,
   height: number
 }
+
+interface Target {
+  media: string;
+  copy: string;
+}
