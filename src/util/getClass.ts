@@ -1,0 +1,1 @@
+export const getClass = (...args: string[]) => args.filter(Boolean).join(' ');

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { AddStore } from "../../../stores/AddStore";
   import { ItemsStore } from "../../../stores/ItemsStore";
-  import { closeOnOutsideClick } from "../../../utils";
+  import { closeOnOutsideClick } from "../../../util/closeOnOutsideClick";
   import AddSection from "./AddSection.svelte";
 
   let showAdd = false;

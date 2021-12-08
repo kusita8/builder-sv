@@ -1,6 +1,6 @@
 <script lang="ts">
   import { DragHandler } from "../../../lib/drag";
-  import Icon from "../../../components/Icon.svelte";
+  import Icon from "../../../components/atoms/Icon.svelte";
   import { ItemsStore } from "../../../stores/ItemsStore";
   import { SelectedItemStore } from "../../../stores/SelectedItemStore";
   import type { Item } from "../../../global";

@@ -3,7 +3,7 @@ import { ENUMS } from '../enums';
 import type { Item } from '../global';
 import { ItemsStore } from '../stores/ItemsStore';
 import { SelectedItemStore } from '../stores/SelectedItemStore';
-import { s } from '../utils';
+import { s } from '../util/s';
 
 const { DATA_ID } = ENUMS;
 

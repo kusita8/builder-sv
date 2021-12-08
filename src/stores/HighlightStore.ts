@@ -6,6 +6,6 @@ export const HighlightStore = (() => {
   return {
     subscribe,
     set,
-    refresh: () => update(a => a),
+    refresh: (timeout?: number) => setTimeout(() => update(a => a), timeout || 0),
   }
 })();

@@ -3,7 +3,10 @@ import type { Item } from "../global";
 import { HighlightStore } from "../stores/HighlightStore";
 import { SelectedItemStore } from "../stores/SelectedItemStore";
 import { UserSiteEventsStore } from "../stores/UserSiteEventsStore";
-import { createNode, getClass, onLoad, s } from "../utils";
+import { createNode } from "../util/createNode";
+import { getClass } from "../util/getClass";
+import { onLoad } from "../util/onLoad";
+import { s } from "../util/s";
 
 const { DATA_ID } = ENUMS;
 const {

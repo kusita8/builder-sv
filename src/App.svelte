@@ -2,7 +2,7 @@
   import Left from "./modules/LeftSidebar/Left.svelte";
   import Right from "./modules/RightSidebar/Right.svelte";
   import UserSite from "./modules/UserSite/UserSite.svelte";
-  import Highlight from "./components/Highlight.svelte";
+  import Highlight from "./components/organisms/Highlight.svelte";
   import Header from "./modules/Header/Header.svelte";
 </script>
 

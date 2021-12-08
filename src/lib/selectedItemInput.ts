@@ -1,5 +1,6 @@
 import type { Item } from "../global";
-import { onLoad, s } from "../utils";
+import { onLoad } from "../util/onLoad";
+import { s } from "../util/s";
 import userSite from "./userSite";
 
 

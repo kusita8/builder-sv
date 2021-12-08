@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { HighlightStore } from "../stores/HighlightStore";
-  import { onLoad, s } from "../utils";
+  import { HighlightStore } from "../../stores/HighlightStore";
+  import { onLoad } from "../../util/onLoad";
+  import { s } from "../../util/s";
 
   let userSite = {} as HTMLElement;
   let currentItem = {};

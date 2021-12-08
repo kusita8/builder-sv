@@ -1,4 +1,4 @@
-import { downloadString } from "../utils"
+import { downloadString } from "../util/downloadString";
 import userSite from "./userSite"
 
 

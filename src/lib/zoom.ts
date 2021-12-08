@@ -1,7 +1,8 @@
 import { get } from "svelte/store";
 import { DimensionsStore } from "../stores/DimensionsStore";
 import { HighlightStore } from "../stores/HighlightStore";
-import { onLoad, s } from "../utils";
+import { onLoad } from "../util/onLoad";
+import { s } from "../util/s";
 
 let zoomArea = {} as HTMLElement
 let zoomContainer = {} as HTMLElement
@@ -63,10 +64,9 @@ const HandleZoom = (e: WheelEvent) => {
     e.stopPropagation();
   }
 
-  setTimeout(() => {
-    // refresh selected item to refresh highlight
-    HighlightStore.refresh();
-  }, 200)
+  // refresh selected item to refresh highlight
+  HighlightStore.refresh(50);
+  HighlightStore.refresh(200);
 }
 
 const centerZoomArea = () => {

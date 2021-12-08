@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DimensionsStore } from "../../stores/DimensionsStore";
   import { SelectedItemStore } from "../../stores/SelectedItemStore";
-  import { mouseEventFromPoint } from "../../utils";
+  import { mouseEventFromPoint } from "../../util/mouseEventFromPoint";
   import { DragHandler } from "./Resize";
 
   let iframe = {} as HTMLIFrameElement;

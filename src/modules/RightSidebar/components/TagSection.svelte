@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Select from "../../../components/Select.svelte";
+  import Select from "../../../components/atoms/Select.svelte";
   import SectionContainer from "./SectionContainer.svelte";
 
   interface Data {
