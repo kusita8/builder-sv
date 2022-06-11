@@ -1,5 +1,6 @@
 <script lang="ts">
   import Select from "../../../components/atoms/Select.svelte";
+  import { ENUMS } from "../../../enums";
   import SectionContainer from "./SectionContainer.svelte";
 
   interface Data {
@@ -9,12 +10,13 @@
 
   export let data: Data;
 
-  const tags = ["div", "section", "a", "img"];
+  const tags = ENUMS.ELEMENTS.map((el) => el.tag);
 </script>
 
 <SectionContainer label={data.label}>
   <Select
     on:select
+    variant="a"
     data={{
       options: tags,
       selected: data.selected,

@@ -1,27 +1,31 @@
 <script lang="ts">
+  import Pill from "./Pill.svelte";
+  export let className = "";
 </script>
 
-<button on:click>
-  <slot />
-</button>
+<div>
+  <Pill {...$$props} {className} tag="button" on:click>
+    <slot />
+  </Pill>
+</div>
 
 <style lang="scss">
   @import "src/styles/variables.scss";
 
-  button {
-    width: 10rem;
-    padding: 0.6rem 0;
-    background: $dark-b;
-    font-weight: bold;
-    border-radius: $br;
-    color: $white-a;
-    border: none;
-    font-size: 1.2rem;
+  div :global(.pill) {
     cursor: pointer;
-    transition: background $tt;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 
     &:hover {
       background: $grey-b;
+    }
+  }
+
+  div :global(.pill.pill--b) {
+    &:hover {
+      background: $blue-b;
     }
   }
 </style>

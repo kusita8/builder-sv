@@ -1,15 +1,12 @@
 <script lang="ts">
-  import { AddStore } from "../../../stores/AddStore";
-  import { ItemsStore } from "../../../stores/ItemsStore";
-  import { closeOnOutsideClick } from "../../../util/closeOnOutsideClick";
-  import AddSection from "./AddSection.svelte";
+  import Pill from "../../components/atoms/Pill.svelte";
+  import { ENUMS } from "../../enums";
+  import { AddStore } from "../../stores/AddStore";
+  import { ItemsStore } from "../../stores/ItemsStore";
+  import { closeOnOutsideClick } from "../../util/closeOnOutsideClick";
+  import AddSection from "./components/AddSection.svelte";
 
   let showAdd = false;
-
-  const elementsItems = [
-    { label: "Div", tag: "div" },
-    { label: "Section", tag: "section" },
-  ];
 
   const HandleItemClick = (e) => {
     showAdd = false;
@@ -30,11 +27,13 @@
 
 {#if showAdd}
   <div class="add">
-    <div class="add__to">Add to: {$AddStore.parent.label || ""}</div>
+    <div class="add__to">
+      <Pill variant="a">Add to: {$AddStore.parent?.label || ""}</Pill>
+    </div>
     <AddSection
       on:onitemclick={HandleItemClick}
       label="Elements"
-      items={elementsItems}
+      items={ENUMS.ELEMENTS}
       showingItems={true}
     />
     {#if $AddStore.hasComponets}
@@ -48,17 +47,22 @@
 {/if}
 
 <style type="text/scss">
+  @import "src/styles/variables.scss";
+
   .add {
     position: absolute;
-    top: 100%;
+    top: calc(var(--header-height) + 2rem);
+    left: calc(var(--left-sidebar-width) + 2.9rem);
     z-index: 10;
-    background: white;
-    width: 500px;
-    left: 4px;
-    border: 1px solid black;
+    background: $dark-a;
+    width: 22%;
+    min-width: 20rem;
+    max-width: 30rem;
+    border-radius: 2.5%;
+    padding: 1.5rem 1.8rem 2.6rem;
 
     &__to {
-      padding: 20px 10px;
+      margin-bottom: 1.3rem;
     }
   }
 </style>

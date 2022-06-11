@@ -1,38 +1,39 @@
-import { writable } from "svelte/store"
+import { writable } from "svelte/store";
 import type { Target } from "../global";
 
 export const TargetsStore = (() => {
-  const { subscribe, update } = writable([
+  const DEFAULT_TARGETS = [
     {
+      copy: "None",
       media: "ALL",
-      copy: "ALL",
     },
     {
+      copy: "768px",
       media: "(min-width: 768px)",
-      copy: "Min width: 768px",
     },
     {
-      media: "(min-width: 1024px)",
-      copy: "Min width: 1024px",
-    },
-    {
-      media: "",
       copy: "Add custom...",
+      media: "",
     },
-  ] as Target[]);
+  ] as Target[];
 
+  const { subscribe, update } = writable({
+    MAX: DEFAULT_TARGETS,
+    MIN: DEFAULT_TARGETS,
+  });
 
   return {
     subscribe,
-    add: (newTarget: Target, index: number) => {
-      update(store => {
-        const storeCopy = [...store];
+    add: (newTarget: Target, target: string) => {
+      update((store) => {
+        const targetCopy = [...store[target]];
 
-        storeCopy.splice(index, 0, newTarget);
+        targetCopy.splice(targetCopy.length - 1, 0, newTarget);
 
-        return storeCopy;
-      })
-    }
-  }
+        store[target] = targetCopy;
 
-})()
+        return store;
+      });
+    },
+  };
+})();

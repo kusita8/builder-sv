@@ -44,5 +44,11 @@
   textarea {
     width: 100%;
     resize: none;
+    outline: none;
+  }
+
+  textarea {
+    border-radius: 0.4rem;
+    padding: 0.8rem 1.3rem;
   }
 </style>

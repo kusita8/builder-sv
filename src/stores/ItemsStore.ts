@@ -1,49 +1,46 @@
 import { writable } from "svelte/store";
 import type { Item } from "../global";
 import { UserSiteEventsStore } from "./UserSiteEventsStore";
-import { ENUMS } from '../enums';
+import { ENUMS } from "../enums";
 import { SelectedItemStore } from "./SelectedItemStore";
 import userSite from "../lib/userSite";
 import { getId } from "../util/getId";
 
-const {
-  ADD_TO_PARENT,
-  CHANGE_LOCATION,
-} = ENUMS.USER_SITE_EVENTS
-const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS
-
+const { ADD_TO_PARENT, CHANGE_LOCATION } = ENUMS.USER_SITE_EVENTS;
+const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS;
 
 export const ItemsStore = (() => {
-  const { subscribe, update } = writable([] as Item[])
-  const hiddenChildren = {} as { parent: Item, children: Item[] };
+  const { subscribe, update } = writable([] as Item[]);
+  const hiddenChildren = {} as { parent: Item; children: Item[] };
 
-  const getParentIndex = (items, parent) => items.findIndex(item => item.id === parent.id);
+  const getParentIndex = (items, parent) =>
+    items.findIndex((item) => item.id === parent.id);
 
   const showChildren = (items, parent, parentIndex) => {
     const parentHiddenChildren = hiddenChildren[parent.id];
 
     if (parentHiddenChildren) {
       const children = parentHiddenChildren.children;
-      items.splice(parentIndex + 1, 0, ...children)
+      items.splice(parentIndex + 1, 0, ...children);
     }
   };
 
   return {
     subscribe,
-    refresh: () => update(a => a),
+    refresh: () => update((a) => a),
     add: (parent?: Item, item = {} as any) => {
       const newItem = {
         depth: 1,
         id: item.defaultId || getId(),
-        tag: item.tag || 'div',
-        label: item.label || 'Div',
+        tag: item.tag || "div",
+        label: item.label || "Div",
         attributes: item.attributes || {},
         isComponent: item.isComponent || false,
         hasChildren: false,
         showingChildren: true,
         node: null,
         parentId: null,
-      } as Item
+      } as Item;
 
       if (item.className) {
         newItem.className = item.className;
@@ -58,7 +55,10 @@ export const ItemsStore = (() => {
 
           let lastChildIndex = parentIndex;
 
-          while (items[lastChildIndex + 1] && items[lastChildIndex + 1].depth > parent.depth) {
+          while (
+            items[lastChildIndex + 1] &&
+            items[lastChildIndex + 1].depth > parent.depth
+          ) {
             lastChildIndex = lastChildIndex + 1;
           }
 
@@ -70,20 +70,20 @@ export const ItemsStore = (() => {
           return items;
         } else {
           newItem.parentId = null;
-          return [...items, newItem]
+          return [...items, newItem];
         }
-      })
+      });
 
       // send event to user site
       UserSiteEventsStore.set({
         event: ADD_TO_PARENT as keyof typeof ENUMS.USER_SITE_EVENTS,
-        data: newItem
-      })
+        data: newItem,
+      });
     },
     hideChildren: (parent: Item) => {
-      const newHiddenChildren = { parent, children: [] }
+      const newHiddenChildren = { parent, children: [] };
 
-      update(items => {
+      update((items) => {
         const parentIndex = getParentIndex(items, parent);
         const childIndex = parentIndex + 1;
 
@@ -95,72 +95,77 @@ export const ItemsStore = (() => {
         items[parentIndex].showingChildren = false;
 
         return items;
-      })
+      });
 
       hiddenChildren[parent.id] = newHiddenChildren;
     },
     showChildren: (parent: Item) => {
-      update(items => {
+      update((items) => {
         const parentIndex = getParentIndex(items, parent);
 
         showChildren(items, parent, parentIndex);
 
         items[parentIndex].showingChildren = true;
         return items;
-      })
+      });
 
       delete hiddenChildren[parent.id];
     },
     insertInPosition: (item, prevIndex, newIndex) => {
-      update(items => {
+      update((items) => {
         const dir = prevIndex < newIndex ? 0 : -1;
         const leftSibling = items[newIndex + dir];
 
         const prevItem = items.splice(prevIndex, 1);
 
         // check if parent still has children
-        const oldParentIndex = getParentIndex(items, { id: prevItem[0].parentId });
+        const oldParentIndex = getParentIndex(items, {
+          id: prevItem[0].parentId,
+        });
         const oldParent = items[oldParentIndex];
-        if (!items[oldParentIndex + 1] ||
-          items[oldParentIndex + 1].depth <= oldParent.depth) {
+        if (
+          !items[oldParentIndex + 1] ||
+          items[oldParentIndex + 1].depth <= oldParent.depth
+        ) {
           // it doesn't have children
           oldParent.hasChildren = false;
           oldParent.showingChildren = false;
-          oldParent.node.classList.add(EMPTY_SITE_COMPONENT)
+          oldParent.node.classList.add(EMPTY_SITE_COMPONENT);
         }
 
         // update children depth
         if (hiddenChildren[item.id]) {
-          hiddenChildren[item.id].children.forEach(el => {
+          hiddenChildren[item.id].children.forEach((el) => {
             const diff = el.depth - prevItem[0].depth;
             el.depth = item.depth + diff;
-          })
+          });
         }
 
-        const leftSiblingIndex = items.findIndex(el => el.id === leftSibling.id);
+        const leftSiblingIndex = items.findIndex(
+          (el) => el.id === leftSibling.id
+        );
 
         items.splice(leftSiblingIndex + 1, 0, item);
 
         // send event to user site
         UserSiteEventsStore.set({
           event: CHANGE_LOCATION as keyof typeof ENUMS.USER_SITE_EVENTS,
-          data: { item, leftSibling }
-        })
+          data: { item, leftSibling },
+        });
 
         return items;
-      })
+      });
     },
     delete: (item) => {
-      if (item.id === 'body') return;
+      if (item.id === "body") return;
 
-      update(items => {
+      update((items) => {
         SelectedItemStore.set({});
 
-        userSite.deleteItem(item)
+        userSite.deleteItem(item);
 
-
-        return items.filter(el => el.id !== item.id)
+        return items.filter((el) => el.id !== item.id);
       });
-    }
-  }
+    },
+  };
 })();

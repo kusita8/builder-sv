@@ -4,11 +4,13 @@
   import UserSite from "./modules/UserSite/UserSite.svelte";
   import Highlight from "./components/organisms/Highlight.svelte";
   import Header from "./modules/Header/Header.svelte";
+  import Add from "./modules/Add/Add.svelte";
 </script>
 
 <Header />
 <main class="app">
   <div class="app__inner">
+    <Add />
     <Left />
     <UserSite />
     <Right />
@@ -28,6 +30,7 @@
 <style type="text/scss">
   :global(:root) {
     --header-height: 50px;
+    --left-sidebar-width: 20%;
   }
 
   .app {

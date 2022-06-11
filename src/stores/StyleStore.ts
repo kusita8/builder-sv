@@ -1,12 +1,10 @@
 import { get, writable } from "svelte/store";
 import type { Item, StyleStoreItem } from "../global";
-import { ENUMS } from '../enums';
+import { ENUMS } from "../enums";
 import { HighlightStore } from "./HighlightStore";
 import { UserSiteEventsStore } from "./UserSiteEventsStore";
 
-const {
-  UPDATE_STYLE,
-} = ENUMS.USER_SITE_EVENTS
+const { UPDATE_STYLE } = ENUMS.USER_SITE_EVENTS;
 
 export const StyleStore = (() => {
   const store = writable({} as StyleStoreItem);
@@ -17,7 +15,7 @@ export const StyleStore = (() => {
     classNamesCount++;
     item.className = `element-${classNamesCount}`;
     return item.className;
-  }
+  };
 
   return {
     subscribe,
@@ -30,13 +28,13 @@ export const StyleStore = (() => {
         item.node.classList.add(className);
       }
 
-      update(store => {
+      update((store) => {
         if (style) {
           // overwriting style for rule because user will be editing it
           store[className] = {
             ...store[className],
-            [target]: style
-          }
+            [target]: style,
+          };
         } else if (store[className] && store[className][target]) {
           // if style is empty
           if (Object.keys(store[className]).length === 1) {
@@ -54,28 +52,27 @@ export const StyleStore = (() => {
             className,
             style: store[className] && store[className][target],
             target,
-          }
+          },
         });
 
         // refresh highlight
         HighlightStore.refresh();
 
-        return store
-      })
-
+        return store;
+      });
     },
-    get: (className: string, target: any) => {
+    get: (className: string, media: any) => {
       const styles = get(store);
 
-      if (styles[className] && styles[className][target.media]) {
-        return styles[className][target.media]
+      if (styles[className] && styles[className][media]) {
+        return styles[className][media];
       }
 
-      return ''
+      return "";
     },
     addClassName: (item: Item) => {
       const className = getClassName(item);
       item.node.classList.add(className);
-    }
-  }
+    },
+  };
 })();

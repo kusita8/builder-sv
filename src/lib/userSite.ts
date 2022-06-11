@@ -14,9 +14,9 @@ const {
   CHANGE_LOCATION,
   UPDATE_STYLE,
   SET_ATTRIBUTE,
-  CHANGE_NODE_TAG
-} = ENUMS.USER_SITE_EVENTS
-const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS
+  CHANGE_NODE_TAG,
+} = ENUMS.USER_SITE_EVENTS;
+const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS;
 
 class UserSite {
   body: HTMLBodyElement;
@@ -27,28 +27,28 @@ class UserSite {
 
   constructor() {
     onLoad(() => {
-      const iframe = s('#user-site') as HTMLIFrameElement
+      const iframe = s("#user-site") as HTMLIFrameElement;
       this.body = iframe.contentWindow.document.body as HTMLBodyElement;
 
       const style = document.createElement("style");
-      style.id = 'mainstyles';
+      style.id = "mainstyles";
       iframe.contentWindow.document.head.appendChild(style);
       this.sheet = style.sheet as CSSStyleSheet;
 
-      UserSiteEventsStore.subscribe(value => {
+      UserSiteEventsStore.subscribe((value) => {
         const { event, data } = value;
 
         switch (event) {
           case ADD_TO_PARENT:
-            return this.addToParent(data)
+            return this.addToParent(data);
           case CHANGE_LOCATION:
-            return this.changeLocation(data)
+            return this.changeLocation(data);
           case UPDATE_STYLE:
-            return this.updateStyle(data)
+            return this.updateStyle(data);
           case SET_ATTRIBUTE:
-            return this.setAttribute(data)
+            return this.setAttribute(data);
           case CHANGE_NODE_TAG:
-            return this.changeNodeTag(data)
+            return this.changeNodeTag(data);
           default:
             return null;
         }
@@ -62,34 +62,35 @@ class UserSite {
             this.mutationBacklog.shift()();
           }
         }
-      })
+      });
 
-      observer.observe(this.body, { attributes: true, childList: true, subtree: true })
-    })
+      observer.observe(this.body, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    });
   }
 
   private _generateNode(item, isEmpty = true) {
-    const className = getClass(
-      isEmpty && EMPTY_SITE_COMPONENT,
-      item.className
-    )
+    const className = getClass(isEmpty && EMPTY_SITE_COMPONENT, item.className);
 
     const node = createNode({
       [DATA_ID]: item.id,
       tag: item.tag,
       class: className,
-      ...item.attributes
+      ...item.attributes,
     });
 
     item.node = node;
 
-    node.addEventListener('click', e => {
+    node.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
       SelectedItemStore.set(item);
     });
 
-    node.addEventListener('dblclick', e => {
+    node.addEventListener("dblclick", (e) => {
       e.stopPropagation();
       e.preventDefault();
       SelectedItemStore.setInput(item);
@@ -98,12 +99,12 @@ class UserSite {
     return node;
   }
 
-  private _generateCssRule(className, style, target) {
+  private _generateCssRule(className, style, target: string) {
     const rule = `.${className}{${style}}`;
-    if (target === 'ALL') {
-      return rule
+    if (!target || target.includes("ALL")) {
+      return rule;
     } else {
-      return `@media ${target}{${rule}}`
+      return `@media ${target}{${rule}}`;
     }
   }
 
@@ -111,11 +112,11 @@ class UserSite {
     let html = '<!DOCTYPE html><html lang="en">';
     html += `<head>${iframeDocument.head.innerHTML}</head>`;
     html += `<body>${iframeDocument.body.innerHTML}</body>`;
-    return html
+    return html;
   }
 
   addToParent(item: Item) {
-    const node = this._generateNode(item)
+    const node = this._generateNode(item);
 
     if (item.parentId) {
       const parent = this.body.querySelector(`[${DATA_ID}=${item.parentId}]`);
@@ -126,7 +127,7 @@ class UserSite {
     }
   }
 
-  changeLocation({ item, leftSibling }: { item: Item, leftSibling: Item }) {
+  changeLocation({ item, leftSibling }: { item: Item; leftSibling: Item }) {
     if (item.parentId === leftSibling.id) {
       // sibling is parent
       if (leftSibling.node.firstChild) {
@@ -139,7 +140,9 @@ class UserSite {
     } else {
       // sibling is sibling
 
-      if (leftSibling.node.parentElement.getAttribute(DATA_ID) === item.parentId) {
+      if (
+        leftSibling.node.parentElement.getAttribute(DATA_ID) === item.parentId
+      ) {
         // same parent, insert before sibling
         const leftSiblingParent = leftSibling.node.parentElement;
 
@@ -149,11 +152,16 @@ class UserSite {
         // doesnt have sibling, find top parent
         let trueSibling = leftSibling.node.parentElement;
 
-        while (trueSibling.parentElement.getAttribute(DATA_ID) !== item.parentId) {
+        while (
+          trueSibling.parentElement.getAttribute(DATA_ID) !== item.parentId
+        ) {
           trueSibling = trueSibling.parentElement;
         }
 
-        trueSibling.parentElement.insertBefore(item.node, trueSibling.nextSibling);
+        trueSibling.parentElement.insertBefore(
+          item.node,
+          trueSibling.nextSibling
+        );
       }
     }
 
@@ -167,7 +175,10 @@ class UserSite {
 
     // ADD NEW RULE
     if (style) {
-      this.sheet.insertRule(this._generateCssRule(className, style, target), cssRules.length);
+      this.sheet.insertRule(
+        this._generateCssRule(className, style, target),
+        cssRules.length
+      );
     }
   }
 
@@ -181,7 +192,7 @@ class UserSite {
 
         if (rule.selectorText === currentClass) {
           if (deleteRule) {
-            this.sheet.deleteRule(i)
+            this.sheet.deleteRule(i);
           }
           return true;
         }
@@ -197,14 +208,14 @@ class UserSite {
           break;
         }
       }
-    }
+    };
 
     if (!target) {
       // delete all rules
       checkRules(cssRules, true);
       checkMediaRules();
-    } else if (target === 'ALL') {
-      checkRules(cssRules, true)
+    } else if (target === "ALL") {
+      checkRules(cssRules, true);
     } else {
       checkMediaRules();
     }
@@ -220,7 +231,7 @@ class UserSite {
     }
   }
 
-  setAttribute({ node, attribute }: { node: HTMLElement, attribute: any }) {
+  setAttribute({ node, attribute }: { node: HTMLElement; attribute: any }) {
     node.setAttribute(attribute.name, attribute.value);
   }
 
@@ -244,9 +255,9 @@ class UserSite {
       newUserNode.appendChild(child);
     }
 
-    if (item.tag === 'img') this.removeDefaultItemClass(item);
+    if (item.tag === "img") this.removeDefaultItemClass(item);
 
-    oldNode.parentElement.replaceChild(newUserNode, oldNode)
+    oldNode.parentElement.replaceChild(newUserNode, oldNode);
     item.node = newUserNode;
   }
 
@@ -265,7 +276,8 @@ class UserSite {
   }
 
   updateItemInnerText(item: Item, value: string) {
-    const hasTextNode = item.node.childNodes[0] && item.node.childNodes[0].nodeValue;
+    const hasTextNode =
+      item.node.childNodes[0] && item.node.childNodes[0].nodeValue;
 
     if (value.length === 0 && hasTextNode) {
       item.node.removeChild(item.node.childNodes[0]);
@@ -285,7 +297,7 @@ class UserSite {
   }
 
   generateHTML() {
-    const iframeDocument = s('#user-site').contentWindow.document;
+    const iframeDocument = s("#user-site").contentWindow.document;
 
     const iframeCopy = document.createElement("iframe");
     document.body.appendChild(iframeCopy);
@@ -294,25 +306,27 @@ class UserSite {
     iframeCopyDocument.head.innerHTML = iframeDocument.head.innerHTML;
     iframeCopyDocument.body.innerHTML = iframeDocument.body.innerHTML;
 
-    const styles = Object.values(this.sheet.cssRules).reduce((acc, cur) => acc += cur.cssText, '');
-    const iframeCopyStyleTag = iframeCopyDocument.querySelector('#mainstyles');
+    const styles = Object.values(this.sheet.cssRules).reduce(
+      (acc, cur) => (acc += cur.cssText),
+      ""
+    );
+    const iframeCopyStyleTag = iframeCopyDocument.querySelector("#mainstyles");
     iframeCopyStyleTag.innerHTML = styles;
-    iframeCopyStyleTag.removeAttribute('id');
+    iframeCopyStyleTag.removeAttribute("id");
 
     // remove data id and empty class
-    iframeCopyDocument.body.querySelectorAll('[data-id]').forEach(node => {
-      node.removeAttribute('data-id');
-      node.classList.remove(EMPTY_SITE_COMPONENT)
+    iframeCopyDocument.body.querySelectorAll("[data-id]").forEach((node) => {
+      node.removeAttribute("data-id");
+      node.classList.remove(EMPTY_SITE_COMPONENT);
       if (!node.className) {
-        node.removeAttribute('class');
+        node.removeAttribute("class");
       }
-    })
+    });
 
     const html = this._getIframeHTML(iframeCopyDocument);
-    document.body.removeChild(iframeCopy)
-    return html
+    document.body.removeChild(iframeCopy);
+    return html;
   }
 }
-
 
 export default new UserSite();

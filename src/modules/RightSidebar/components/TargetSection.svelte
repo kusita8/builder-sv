@@ -3,108 +3,99 @@
   import SectionContainer from "./SectionContainer.svelte";
   import { createEventDispatcher } from "svelte";
   import { TargetsStore } from "../../../stores/TargetsStore";
+  import Flex from "../../../components/atoms/Flex.svelte";
+  import Button from "../../../components/atoms/Button.svelte";
 
   interface Data {
     label?: string;
     selected?: {
-      copy: string;
-      media: string;
+      [target: string]: {
+        copy: string;
+        media: string;
+      };
     };
   }
 
   export let data: Data;
   let addCustomTarget = false;
+  let currentTarget = "";
 
   const dispatch = createEventDispatcher();
 
-  const handleOnSelect = (e) => {
-    const selectedIndex = $TargetsStore.findIndex((el) => el.copy === e.detail);
+  const handleOnSelect = (e, target) => {
+    const currentTargetValues = $TargetsStore[target];
+    const selectedIndex = currentTargetValues.findIndex(
+      (el) => el.copy === e.detail
+    );
 
-    if (selectedIndex === $TargetsStore.length - 1) {
+    if (selectedIndex === currentTargetValues.length - 1) {
       addCustomTarget = true;
+      currentTarget = target;
     } else {
-      dispatch("select", $TargetsStore[selectedIndex]);
+      data.selected[target] = currentTargetValues[selectedIndex];
+      dispatch("select", data.selected);
     }
   };
 
-  let minWidth = "";
-  let maxWidth = "";
+  let inputValue = "";
   const handleCustomTargetSubmit = (e) => {
     e.preventDefault();
 
-    const medias = [
-      { mediaCopy: "min-width", copy: "Min width", value: minWidth },
-      { mediaCopy: "max-width", copy: "Max width", value: maxWidth },
-    ];
+    if (!inputValue) return;
 
-    const values = medias
-      .filter((el) => el.value)
-      .reduce(
-        (acc, cur) => {
-          const media = `(${cur.mediaCopy}: ${cur.value})`;
-          const copy = `${cur.copy}: ${cur.value}`;
-
-          if (acc.media) {
-            return {
-              media: acc.media + ` and ${media}`,
-              copy: acc.copy + ` and ${copy.toLocaleLowerCase()}`,
-            };
-          }
-          return {
-            media,
-            copy,
-          };
-        },
-        { media: "", copy: "" }
-      );
-
-    const newTarget = {
-      copy: values.copy,
-      media: values.media,
+    const targetValue = Number(inputValue) ? `${inputValue}px` : inputValue;
+    const mediaTypesCopy = {
+      MAX: "max-width",
+      MIN: "min-width",
     };
 
-    const previousIndex = $TargetsStore.findIndex(
-      (el) => el.media === values.media
-    );
+    const newTarget = {
+      copy: targetValue,
+      media: `(${mediaTypesCopy[currentTarget]}: ${targetValue})`,
+    };
 
-    TargetsStore.add(
-      newTarget,
-      previousIndex === -1 ? $TargetsStore.length - 1 : previousIndex
-    );
+    TargetsStore.add(newTarget, currentTarget);
+
+    data.selected[currentTarget] = newTarget;
 
     addCustomTarget = false;
-    dispatch("select", newTarget);
-    minWidth = "";
-    maxWidth = "";
+    dispatch("select", data.selected);
+    inputValue = "";
+    currentTarget = "";
   };
 </script>
 
-<SectionContainer label={data.label}>
-  <Select
-    on:select={handleOnSelect}
-    data={{
-      options: $TargetsStore.map((el) => el.copy),
-      selected: data.selected.copy,
-    }}
-  />
+<SectionContainer label={data.label} variant="dark">
+  <Flex alignItems="center" gap="1">
+    <Select
+      on:select={(e) => handleOnSelect(e, "MIN")}
+      label="MIN"
+      data={{
+        options: $TargetsStore["MIN"].map((el) => el.copy),
+        selected: data.selected["MIN"].copy,
+      }}
+    />
+    <Select
+      on:select={(e) => handleOnSelect(e, "MAX")}
+      label="MAX"
+      data={{
+        options: $TargetsStore["MAX"].map((el) => el.copy),
+        selected: data.selected["MAX"].copy,
+      }}
+    />
+  </Flex>
   {#if addCustomTarget}
     <div class="target-add" on:submit={handleCustomTargetSubmit}>
       <form autocomplete="off">
-        <label for="min-width">Min width</label>
-        <input
-          autocomplete="off"
-          bind:value={minWidth}
-          type="text"
-          id="min-width"
-        />
-        <label for="max-width">Max width</label>
-        <input
-          autocomplete="off"
-          bind:value={maxWidth}
-          type="text"
-          id="max-width"
-        />
-        <button>add</button>
+        <Flex gap="1">
+          <input
+            autocomplete="off"
+            bind:value={inputValue}
+            type="text"
+            id="min-width"
+          />
+          <Button variant="a" size="small">Add</Button>
+        </Flex>
       </form>
     </div>
   {/if}

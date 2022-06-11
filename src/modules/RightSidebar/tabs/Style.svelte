@@ -4,27 +4,51 @@
   import InputSection from "../components/InputSection.svelte";
   import TargetSection from "../components/TargetSection.svelte";
 
-  let target = {
-    copy: "ALL",
-    media: "ALL",
+  let currentTarget = {
+    MAX: {
+      copy: "None",
+      media: "ALL",
+    },
+    MIN: {
+      copy: "None",
+      media: "ALL",
+    },
   };
 
+  let currentMedia = "ALL and ALL";
+
   const handleOnTargetSelect = (e) => {
-    target = e.detail;
+    currentTarget = e.detail;
+
+    let newCurrentMedia = "";
+    for (const target in e.detail) {
+      const mediaCopy = e.detail[target].media;
+
+      if (
+        !newCurrentMedia ||
+        (newCurrentMedia.includes("ALL") && !mediaCopy.includes("ALL"))
+      )
+        newCurrentMedia = mediaCopy;
+      else if (mediaCopy.includes("ALL") || !newCurrentMedia.includes("ALL"))
+        newCurrentMedia = `${newCurrentMedia} and ${mediaCopy}`;
+    }
+    currentMedia = newCurrentMedia;
   };
 
   const handleOnInputStyle = (e) => {
-    StyleStore.add($SelectedItemStore, e.target.value, target.media);
+    StyleStore.add($SelectedItemStore, e.target.value, currentMedia);
   };
 
-  $: style = StyleStore.get($SelectedItemStore.className, target);
+  $: style = StyleStore.get($SelectedItemStore.className, currentMedia);
+
+  console.log(style);
 </script>
 
 <TargetSection
   on:select={handleOnTargetSelect}
   data={{
     label: "Target",
-    selected: target,
+    selected: currentTarget,
   }}
 />
 <InputSection
@@ -35,7 +59,3 @@
     big: true,
   }}
 />
-
-<style>
-  /* your styles go here */
-</style>

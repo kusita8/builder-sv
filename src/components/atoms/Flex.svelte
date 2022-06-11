@@ -3,6 +3,7 @@
 
   export let justifyContent: "space-between" | "center" = undefined;
   export let alignItems: "center" | "flex-end" = undefined;
+  export let gap = "";
   let className: string = undefined;
   export { className as class };
 
@@ -10,7 +11,8 @@
     "flex",
     className,
     justifyContent && `justifyContent--${justifyContent}`,
-    alignItems && `alignItems--${alignItems}`
+    alignItems && `alignItems--${alignItems}`,
+    gap && `gap--${gap}`
   );
 </script>
 
@@ -38,6 +40,11 @@
       }
       &--center {
         align-items: center;
+      }
+    }
+    &.gap {
+      &--1 {
+        gap: 1rem;
       }
     }
   }

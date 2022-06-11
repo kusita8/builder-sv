@@ -42,6 +42,10 @@
       ItemsStore.showChildren(data);
     }
   };
+
+  const handleBlur = (e) => {
+    e.target.scrollLeft = 0;
+  };
 </script>
 
 <div
@@ -67,6 +71,7 @@
         on:mousedown={(e) => e.stopPropagation()}
         on:click={(e) => e.stopPropagation()}
         on:input={handleLabelChange}
+        on:blur={handleBlur}
         rows="1"
         wrap="off"
         value={data.label}
@@ -77,12 +82,14 @@
       />
     </div>
     <div class="component__add" on:click={addChildren}>
-      <Icon name="add" />
+      <Icon name="add_b" />
     </div>
   </div>
 </div>
 
 <style type="text/scss">
+  @import "src/styles/variables.scss";
+
   :global(.component.transition) {
     transition: transform 120ms linear;
   }
@@ -100,17 +107,14 @@
     &.selected,
     &:focus-within,
     &:hover {
-      background: #e6ecf9;
+      background: $blue-a;
     }
 
+    &.selected,
     &:hover,
     &:focus-within {
       .label {
-        outline: 1px solid black;
-
-        textarea {
-          background: white;
-        }
+        border-bottom: 1px solid $dark-a;
       }
     }
 
@@ -136,12 +140,16 @@
         border-radius: 1px;
         outline: none;
         background: transparent;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
       }
     }
 
     &__add :global(svg) {
-      width: 13px;
-      height: 13px;
+      width: 1.6rem;
+      height: 1.6rem;
     }
   }
 
@@ -155,10 +163,6 @@
     position: absolute;
     left: -6px;
     top: 2px;
-
-    &:hover {
-      background: rgb(224, 224, 224);
-    }
 
     &.open {
       transform: rotate(0deg);

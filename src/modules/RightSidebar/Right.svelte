@@ -6,7 +6,7 @@
 
   let activeTab = 0;
 
-  const tabButtons = ["Style", "Config"];
+  const tabButtons = ["Style", "Configuration"];
 </script>
 
 <aside class="right-sidebar">

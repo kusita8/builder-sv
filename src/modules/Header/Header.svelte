@@ -1,11 +1,9 @@
 <script lang="ts">
-  import Add from "./components/Add.svelte";
   import Dimensions from "./components/Dimensions.svelte";
   import Export from "./components/Export.svelte";
 </script>
 
 <header>
-  <Add />
   <Dimensions />
   <Export />
 </header>

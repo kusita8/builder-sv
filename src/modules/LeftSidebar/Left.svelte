@@ -2,16 +2,12 @@
   import Button from "../../components/atoms/Button.svelte";
 
   import Flex from "../../components/atoms/Flex.svelte";
+  import Icon from "../../components/atoms/Icon.svelte";
+  import { AddStore } from "../../stores/AddStore";
 
   import { ItemsStore } from "../../stores/ItemsStore";
   import { onLoad } from "../../util/onLoad";
   import Component from "./components/Component.svelte";
-
-  let items = [];
-
-  ItemsStore.subscribe((state) => {
-    items = state;
-  });
 
   onLoad(() => {
     ItemsStore.add(null, { defaultId: "body", label: "Body" });
@@ -20,10 +16,14 @@
 
 <aside class="left-sidebar">
   <Flex justifyContent="center" class="button-container">
-    <Button>Add element</Button>
+    <Button
+      variant="b"
+      on:click={$ItemsStore ? () => AddStore.set($ItemsStore[0]) : undefined}
+      >Add element <Icon name="add" /></Button
+    >
   </Flex>
   <div class="left-sidebar-items">
-    {#each items as item (item)}
+    {#each $ItemsStore as item (item)}
       <Component data={item} />
     {/each}
   </div>
@@ -31,8 +31,8 @@
 
 <style>
   .left-sidebar {
-    flex-basis: 20%;
-    min-width: 20%;
+    flex-basis: var(--left-sidebar-width);
+    min-width: var(--left-sidebar-width);
     background: white;
     overflow-y: auto;
     height: 100%;
