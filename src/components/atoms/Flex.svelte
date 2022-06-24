@@ -1,7 +1,8 @@
 <script lang="ts">
   import { getClass } from "../../util/getClass";
 
-  export let justifyContent: "space-between" | "center" = undefined;
+  export let justifyContent: "space-between" | "center" | "flex-end" =
+    undefined;
   export let alignItems: "center" | "flex-end" = undefined;
   export let gap = "";
   let className: string = undefined;
@@ -16,7 +17,7 @@
   );
 </script>
 
-<div class={classNames}>
+<div class={classNames} on:click>
   <slot />
 </div>
 
@@ -33,6 +34,9 @@
       &--center {
         justify-content: center;
       }
+      &--flex-end {
+        justify-content: flex-end;
+      }
     }
     &.alignItems {
       &--flex-end {
@@ -43,6 +47,9 @@
       }
     }
     &.gap {
+      &--05 {
+        gap: 0.5rem;
+      }
       &--1 {
         gap: 1rem;
       }

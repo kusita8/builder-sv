@@ -10,7 +10,7 @@
 
   const HandleItemClick = (e) => {
     showAdd = false;
-    ItemsStore.add($AddStore.parent, e.detail);
+    ItemsStore.add(e.detail, $AddStore.parent);
     AddStore.clear();
   };
 
@@ -28,7 +28,7 @@
 {#if showAdd}
   <div class="add">
     <div class="add__to">
-      <Pill variant="a">Add to: {$AddStore.parent?.label || ""}</Pill>
+      Add to: <b>{$AddStore.parent?.label || ""}</b>
     </div>
     <AddSection
       on:onitemclick={HandleItemClick}
@@ -62,7 +62,23 @@
     padding: 1.5rem 1.8rem 2.6rem;
 
     &__to {
-      margin-bottom: 1.3rem;
+      margin-bottom: 1.6rem;
+      font-size: 1.3rem;
+      color: $white-a;
+      font-weight: 500;
+      position: relative;
+      width: fit-content;
+
+      &::after {
+        content: "";
+        height: 0.2rem;
+        width: 100%;
+        position: absolute;
+        bottom: -0.5rem;
+        left: 0;
+        border-radius: 0.4rem;
+        background: $blue-c;
+      }
     }
   }
 </style>

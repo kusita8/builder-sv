@@ -15,25 +15,29 @@ const {
   UPDATE_STYLE,
   SET_ATTRIBUTE,
   CHANGE_NODE_TAG,
+  REMOVE_ATTRIBUTE,
 } = ENUMS.USER_SITE_EVENTS;
 const { EMPTY_SITE_COMPONENT } = ENUMS.CSS_CLASS;
+const FONT_STYLE_ID = "fontstyle";
+const MAIN_STYLE_ID = "mainstyles";
 
 class UserSite {
+  iframe: HTMLIFrameElement;
   body: HTMLBodyElement;
   sheet: CSSStyleSheet;
+  fontSheet: CSSStyleSheet;
   isMutating = false;
   currentMutationNode = null;
   mutationBacklog = [];
+  importRules = {};
 
   constructor() {
     onLoad(() => {
       const iframe = s("#user-site") as HTMLIFrameElement;
+      this.iframe = iframe;
       this.body = iframe.contentWindow.document.body as HTMLBodyElement;
-
-      const style = document.createElement("style");
-      style.id = "mainstyles";
-      iframe.contentWindow.document.head.appendChild(style);
-      this.sheet = style.sheet as CSSStyleSheet;
+      this.fontSheet = this._generateStyleTag(iframe, FONT_STYLE_ID);
+      this.sheet = this._generateStyleTag(iframe, MAIN_STYLE_ID);
 
       UserSiteEventsStore.subscribe((value) => {
         const { event, data } = value;
@@ -47,6 +51,8 @@ class UserSite {
             return this.updateStyle(data);
           case SET_ATTRIBUTE:
             return this.setAttribute(data);
+          case REMOVE_ATTRIBUTE:
+            return this.removeAttribute(data);
           case CHANGE_NODE_TAG:
             return this.changeNodeTag(data);
           default:
@@ -70,6 +76,20 @@ class UserSite {
         subtree: true,
       });
     });
+  }
+
+  private _generateStyleTag(iframe: HTMLIFrameElement, id: string) {
+    const fontStyle = document.createElement("style");
+    fontStyle.id = id;
+    iframe.contentWindow.document.head.appendChild(fontStyle);
+    return fontStyle.sheet as CSSStyleSheet;
+  }
+
+  private _generateCssFromSheet(sheet: CSSStyleSheet) {
+    return Object.values(sheet.cssRules).reduce(
+      (acc, cur) => (acc += cur.cssText),
+      ""
+    );
   }
 
   private _generateNode(item, isEmpty = true) {
@@ -99,13 +119,35 @@ class UserSite {
     return node;
   }
 
-  private _generateCssRule(className, style, target: string) {
-    const rule = `.${className}{${style}}`;
+  private _generateCssRules(className, style, target: string) {
+    const urlStyleRegex = new RegExp(/^(\@).*?(([\)|;]))$/gms);
+    const nestedStyleRegex = new RegExp(/^([^\n]*\{).*?(\})$/gms);
+    const targetStyle = style
+      .replace(nestedStyleRegex, "")
+      .replace(urlStyleRegex, "");
+    const urlsStyle = style.match(urlStyleRegex) || [];
+    const nestedStyles = style.match(nestedStyleRegex);
+    const getNestedRuleGap = (rule) => (rule.startsWith(":") ? "" : " ");
+    const rule = `.${className}{${targetStyle}}`;
+    let classNameRule = [];
+    let nestedRules = [];
+
     if (!target || target.includes("ALL")) {
-      return rule;
+      if (targetStyle) classNameRule = [rule];
+      if (nestedStyles)
+        nestedRules = nestedStyles.map(
+          (rule) => `.${className}${getNestedRuleGap(rule)}${rule}`
+        );
     } else {
-      return `@media ${target}{${rule}}`;
+      if (targetStyle) classNameRule = [`@media ${target}{${rule}}`];
+      if (nestedStyles)
+        nestedRules = nestedStyles.map(
+          (rule) =>
+            `@media ${target} (.${className}${getNestedRuleGap(rule)}${rule})`
+        );
     }
+
+    return [...classNameRule, ...nestedRules, ...urlsStyle];
   }
 
   private _getIframeHTML(iframeDocument) {
@@ -115,8 +157,33 @@ class UserSite {
     return html;
   }
 
+  clear() {
+    this.body.innerHTML = "";
+    const head = this.iframe.contentWindow.document.head;
+    [
+      head.querySelector(`#${FONT_STYLE_ID}`),
+      head.querySelector(`#${MAIN_STYLE_ID}`),
+    ].forEach((node) => {
+      node.remove();
+    });
+
+    this.fontSheet = this._generateStyleTag(this.iframe, FONT_STYLE_ID);
+    this.sheet = this._generateStyleTag(this.iframe, MAIN_STYLE_ID);
+    this.mutationBacklog = [];
+    this.importRules = {};
+  }
+
   addToParent(item: Item) {
+    if (this.isMutating) {
+      this.mutationBacklog.push(() => this.addToParent(item));
+      return;
+    }
+
+    this.isMutating = true;
+
     const node = this._generateNode(item);
+
+    this.currentMutationNode = node;
 
     if (item.parentId) {
       const parent = this.body.querySelector(`[${DATA_ID}=${item.parentId}]`);
@@ -124,6 +191,18 @@ class UserSite {
       parent.appendChild(node);
     } else {
       this.body.appendChild(node);
+    }
+
+    if (item.attributes && Object.values(item.attributes).length > 0) {
+      for (const name in item.attributes) {
+        this.setAttribute({
+          node: item.node,
+          attribute: {
+            name,
+            value: item.attributes[name],
+          },
+        });
+      }
     }
   }
 
@@ -153,6 +232,7 @@ class UserSite {
         let trueSibling = leftSibling.node.parentElement;
 
         while (
+          trueSibling.parentElement &&
           trueSibling.parentElement.getAttribute(DATA_ID) !== item.parentId
         ) {
           trueSibling = trueSibling.parentElement;
@@ -169,16 +249,32 @@ class UserSite {
   }
 
   updateStyle({ className, style, target }) {
-    const cssRules = this.sheet.cssRules;
-
     this.deleteItemCssRules(className, target);
 
     // ADD NEW RULE
     if (style) {
-      this.sheet.insertRule(
-        this._generateCssRule(className, style, target),
-        cssRules.length
-      );
+      const rules = this._generateCssRules(className, style, target);
+
+      rules.forEach((rule) => {
+        try {
+          if (rule.includes("@import")) {
+            const lastPosition = this.fontSheet.cssRules.length;
+            const index = this.fontSheet.insertRule(rule, lastPosition);
+
+            const sheetRule = this.fontSheet.cssRules[index] as any;
+            this.importRules = {
+              ...this.importRules,
+              [className]: [
+                ...(this.importRules[className] || []),
+                sheetRule.href,
+              ],
+            };
+          } else {
+            const lastPosition = this.sheet.cssRules.length;
+            this.sheet.insertRule(rule, lastPosition);
+          }
+        } catch {}
+      });
     }
   }
 
@@ -186,15 +282,35 @@ class UserSite {
     const currentClass = `.${className}`;
     const cssRules = this.sheet.cssRules;
 
-    const checkRules = (cssRules, deleteRule) => {
-      for (let i = 0; i < cssRules.length; i++) {
-        const rule = cssRules[i];
+    const ruleTargetsClassname = (cssRule) => {
+      for (let i = 0; i < cssRule.length; i++) {
+        const rule = cssRule[i];
 
-        if (rule.selectorText === currentClass) {
-          if (deleteRule) {
-            this.sheet.deleteRule(i);
-          }
+        if (rule.selectorText.includes(currentClass)) {
           return true;
+        }
+      }
+    };
+
+    const deleteClassnameRules = (cssRules) => {
+      for (let i = 0; i < cssRules.length; i++) {
+        const rule = this.sheet.cssRules[i] as any;
+
+        if (rule.selectorText?.includes(currentClass)) {
+          this.sheet.deleteRule(i--);
+        }
+      }
+
+      if (this.importRules[className]) {
+        for (let i = 0; i < this.fontSheet.cssRules.length; i++) {
+          const rule = this.fontSheet.cssRules[i] as any;
+
+          if (this.importRules[className].includes(rule.href)) {
+            this.fontSheet.deleteRule(i--);
+            this.importRules[className] = this.importRules[className].filter(
+              (item) => item !== rule.href
+            );
+          }
         }
       }
     };
@@ -203,7 +319,11 @@ class UserSite {
       for (let i = 0; i < cssRules.length; i++) {
         const rule = cssRules[i] as any;
 
-        if (rule.conditionText === target && checkRules(rule.cssRules, false)) {
+        if (
+          rule.conditionText === target &&
+          rule.cssRules &&
+          ruleTargetsClassname(rule.cssRules)
+        ) {
           this.sheet.deleteRule(i);
           break;
         }
@@ -212,10 +332,10 @@ class UserSite {
 
     if (!target) {
       // delete all rules
-      checkRules(cssRules, true);
+      deleteClassnameRules(cssRules);
       checkMediaRules();
-    } else if (target === "ALL") {
-      checkRules(cssRules, true);
+    } else if (target.includes("ALL")) {
+      deleteClassnameRules(cssRules);
     } else {
       checkMediaRules();
     }
@@ -232,7 +352,16 @@ class UserSite {
   }
 
   setAttribute({ node, attribute }: { node: HTMLElement; attribute: any }) {
+    if (node.tagName === "IMG" && attribute.name === "src") {
+      this.removeDefaultItemClass({ node } as Item);
+    }
     node.setAttribute(attribute.name, attribute.value);
+  }
+
+  removeAttribute({ node, name }: { node: HTMLElement; name: string }) {
+    if (node.tagName === "IMG" && name === "src")
+      this.addDefaultItemClass({ node } as Item);
+    node.removeAttribute(name);
   }
 
   changeNodeTag(item: Item) {
@@ -244,7 +373,7 @@ class UserSite {
     this.isMutating = true;
 
     const oldNode = item.node;
-    const children = [...oldNode.children];
+    const children = [...(oldNode.children as any)];
 
     const newUserNode = this._generateNode(item, children.length === 0);
 
@@ -264,14 +393,18 @@ class UserSite {
   removeDefaultItemClass(item: Item) {
     if (item.node.classList.contains(EMPTY_SITE_COMPONENT)) {
       item.node.classList.remove(EMPTY_SITE_COMPONENT);
-      HighlightStore.refresh();
+      setTimeout(() => {
+        HighlightStore.refresh();
+      }, 50);
     }
   }
 
   addDefaultItemClass(item: Item) {
     if (!item.node.classList.contains(EMPTY_SITE_COMPONENT)) {
       item.node.classList.add(EMPTY_SITE_COMPONENT);
-      HighlightStore.refresh();
+      setTimeout(() => {
+        HighlightStore.refresh();
+      }, 50);
     }
   }
 
@@ -282,7 +415,6 @@ class UserSite {
     if (value.length === 0 && hasTextNode) {
       item.node.removeChild(item.node.childNodes[0]);
       if (!item.hasChildren) this.addDefaultItemClass(item);
-      else HighlightStore.refresh();
     } else {
       if (hasTextNode) {
         // already had node
@@ -291,9 +423,12 @@ class UserSite {
         const textNode = document.createTextNode(value);
         item.node.insertBefore(textNode, item.node.firstChild);
         if (!item.hasChildren) this.removeDefaultItemClass(item);
-        else HighlightStore.refresh();
       }
     }
+
+    setTimeout(() => {
+      HighlightStore.refresh();
+    }, 50);
   }
 
   generateHTML() {
@@ -306,13 +441,21 @@ class UserSite {
     iframeCopyDocument.head.innerHTML = iframeDocument.head.innerHTML;
     iframeCopyDocument.body.innerHTML = iframeDocument.body.innerHTML;
 
-    const styles = Object.values(this.sheet.cssRules).reduce(
-      (acc, cur) => (acc += cur.cssText),
-      ""
-    );
-    const iframeCopyStyleTag = iframeCopyDocument.querySelector("#mainstyles");
-    iframeCopyStyleTag.innerHTML = styles;
-    iframeCopyStyleTag.removeAttribute("id");
+    const insertStyleToIFrame = (id: string, style: string) => {
+      const styleTag = iframeCopyDocument.querySelector(`#${id}`);
+      if (style) {
+        styleTag.innerHTML = style;
+        styleTag.removeAttribute("id");
+      } else {
+        styleTag.remove();
+      }
+    };
+
+    const fontStyles = this._generateCssFromSheet(this.fontSheet);
+    insertStyleToIFrame("fontstyle", fontStyles);
+
+    const styles = this._generateCssFromSheet(this.sheet);
+    insertStyleToIFrame("mainstyles", styles);
 
     // remove data id and empty class
     iframeCopyDocument.body.querySelectorAll("[data-id]").forEach((node) => {

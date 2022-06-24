@@ -1,8 +1,9 @@
 <script lang="ts">
   import { SelectedItemStore } from "../../stores/SelectedItemStore";
+  import EmptySidebar from "./components/EmptySidebar.svelte";
   import TabButton from "./components/TabButton.svelte";
   import Config from "./tabs/Config.svelte";
-  import Style from "./tabs/Style.svelte";
+  import Styles from "./tabs/Style.svelte";
 
   let activeTab = 0;
 
@@ -23,11 +24,13 @@
       </div>
       <div class="inputs-container">
         {#if activeTab === 0}
-          <Style />
+          <Styles />
         {:else if activeTab === 1}
           <Config />
         {/if}
       </div>
+    {:else}
+      <EmptySidebar />
     {/if}
   </div>
 </aside>
@@ -38,7 +41,7 @@
     min-width: 20%;
     background: white;
     z-index: 2;
-    overflow-y: scroll;
+    overflow-y: auto;
 
     .right-sidebar__inner {
       padding-top: 20px;

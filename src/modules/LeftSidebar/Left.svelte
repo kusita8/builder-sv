@@ -3,14 +3,20 @@
 
   import Flex from "../../components/atoms/Flex.svelte";
   import Icon from "../../components/atoms/Icon.svelte";
+  import selectedItemInput from "../../lib/selectedItemInput";
   import { AddStore } from "../../stores/AddStore";
 
   import { ItemsStore } from "../../stores/ItemsStore";
+  import { StyleStore } from "../../stores/StyleStore";
   import { onLoad } from "../../util/onLoad";
   import Component from "./components/Component.svelte";
 
   onLoad(() => {
-    ItemsStore.add(null, { defaultId: "body", label: "Body" });
+    const hydrateStores = [ItemsStore, StyleStore, selectedItemInput];
+
+    hydrateStores.forEach((store, index) => {
+      setTimeout(() => store.hydrate(), index * 150);
+    });
   });
 </script>
 

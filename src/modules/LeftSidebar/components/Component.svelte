@@ -16,6 +16,8 @@
   });
 
   const selectComponent = () => {
+    const activeElement = document.activeElement as HTMLInputElement;
+    if (activeElement.blur) activeElement.blur();
     SelectedItemStore.set(data);
   };
 
@@ -30,7 +32,6 @@
   const addChildren = (e) => {
     e.stopPropagation();
     AddStore.set(data);
-    // ItemsStore.add(data);
   };
 
   const toggleChildren = (e) => {

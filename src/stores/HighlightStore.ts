@@ -1,4 +1,5 @@
 import { writable } from "svelte/store";
+import { debounce } from "../util/debounce";
 
 export const HighlightStore = (() => {
   const { subscribe, update, set } = writable({} as any);
@@ -6,6 +7,11 @@ export const HighlightStore = (() => {
   return {
     subscribe,
     set,
-    refresh: (timeout?: number) => setTimeout(() => update(a => a), timeout || 0),
-  }
+    refresh: debounce(() => {
+      update((a) => a);
+    }),
+    clear: () => {
+      update(() => ({}));
+    },
+  };
 })();

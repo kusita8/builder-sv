@@ -1,14 +1,27 @@
 <script lang="ts">
+  import Flex from "../../../components/atoms/Flex.svelte";
+  import Icon from "../../../components/atoms/Icon.svelte";
+
   import { getClass } from "../../../util/getClass";
 
   export let label: string;
   export let variant = "";
+  export let addIcon = false;
 </script>
 
 <div
-  class={getClass("input-container", variant && `input-container--${variant}`)}
+  class={getClass(
+    "input-container",
+    variant && `input-container--${variant}`,
+    addIcon && `input-container--add-icon`
+  )}
 >
-  <p>{label}</p>
+  <Flex alignItems="center" class="input-container__label" gap="05" on:click>
+    <p>{label}</p>
+    {#if addIcon}
+      <Icon name="add" />
+    {/if}
+  </Flex>
   <slot />
 </div>
 
@@ -25,14 +38,22 @@
       margin: 1rem auto 0;
     }
 
+    :global(.input-container__label) {
+      margin-bottom: 1rem;
+    }
     p {
-      font-size: 12px;
-      margin-bottom: 10px;
+      font-size: 1.2rem;
     }
 
     &--dark {
       background: $dark-c;
       color: $white-a;
+    }
+
+    &--add-icon {
+      :global(.input-container__label) {
+        cursor: pointer;
+      }
     }
   }
 </style>

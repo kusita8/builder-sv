@@ -1,9 +1,11 @@
 <script lang="ts">
   import Dimensions from "./components/Dimensions.svelte";
   import Export from "./components/Export.svelte";
+  import Reset from "./components/Reset.svelte";
 </script>
 
 <header>
+  <Reset />
   <Dimensions />
   <Export />
 </header>

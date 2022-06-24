@@ -1,7 +1,11 @@
-<script lang="typescript">
+<script lang="ts">
   import type { Attribute } from "../../../global";
   import SectionContainer from "./SectionContainer.svelte";
   import { createEventDispatcher } from "svelte";
+  import AddAttributeModal from "./AddAttributeModal.svelte";
+  import Icon from "../../../components/atoms/Icon.svelte";
+  import Flex from "../../../components/atoms/Flex.svelte";
+  import { SelectedItemStore } from "../../../stores/SelectedItemStore";
 
   interface Data {
     label?: string;
@@ -10,15 +14,19 @@
 
   export let data: Data;
 
+  let addAttributeModal = false;
   let name = "";
   let value = "";
 
   const dispatch = createEventDispatcher();
 
+  const closeModal = () => (addAttributeModal = false);
+
   function forward(e) {
     e.preventDefault();
 
     if (name.trim() && value.trim()) {
+      closeModal();
       dispatch("submit", { name, value });
 
       name = "";
@@ -27,7 +35,7 @@
   }
 
   const formatText = (string) => {
-    const maxLength = 30;
+    const maxLength = 25;
 
     if (string.length > maxLength) {
       return `${string.slice(0, maxLength)}...`;
@@ -37,47 +45,60 @@
   };
 </script>
 
-<SectionContainer label={data.label}>
+<SectionContainer
+  label={data.label}
+  addIcon
+  on:click={() => (addAttributeModal = true)}
+>
   <div class="attrs-current">
     {#each Object.keys(data.attributes) as attrKey (attrKey)}
       <div class="attr-item">
-        <div class="attr-item-name">{attrKey}:</div>
-        <div class="attr-item-value" title={data.attributes[attrKey]}>
-          {formatText(data.attributes[attrKey])}
-        </div>
+        <Flex alignItems="center">
+          <div class="attr-item-name">{attrKey}:</div>
+          <div class="attr-item-value" title={data.attributes[attrKey]}>
+            {formatText(data.attributes[attrKey])}
+          </div>
+        </Flex>
+        <button
+          class="attr-item__button"
+          on:click={() => SelectedItemStore.removeAttribute(attrKey)}
+        >
+          <Icon name="close" />
+        </button>
       </div>
     {/each}
   </div>
-  <div class="attrs-add">
-    <form on:submit={forward} autocomplete="off">
-      <input
-        autocomplete="off"
-        type="text"
-        name="name"
-        id="attr-name"
-        bind:value={name}
-      />
-      <input
-        autocomplete="off"
-        type="text"
-        name="value"
-        id="attr-value"
-        bind:value
-      />
-      <button>add</button>
-    </form>
-  </div>
+  {#if addAttributeModal}
+    <AddAttributeModal
+      onClose={closeModal}
+      on:submit={forward}
+      bind:name
+      bind:value
+    />
+  {/if}
 </SectionContainer>
 
 <style type="text/scss">
+  @import "src/styles/variables.scss";
+
   .attr-item {
     display: flex;
-    border: 1px solid black;
-    margin-bottom: 5px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: $grey-c;
 
     .attr-item-value {
-      margin-left: 10px;
+      margin-left: 0.5rem;
       white-space: nowrap;
+    }
+
+    &__button {
+      cursor: pointer;
+      padding: 0.3rem;
+      background: none;
+      outline: none;
+      border: none;
     }
   }
 </style>

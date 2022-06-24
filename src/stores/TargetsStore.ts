@@ -1,26 +1,13 @@
 import { writable } from "svelte/store";
 import type { Target } from "../global";
+import { defaultTargets } from "../util/defaultTargets";
 
 export const TargetsStore = (() => {
-  const DEFAULT_TARGETS = [
-    {
-      copy: "None",
-      media: "ALL",
-    },
-    {
-      copy: "768px",
-      media: "(min-width: 768px)",
-    },
-    {
-      copy: "Add custom...",
-      media: "",
-    },
-  ] as Target[];
-
-  const { subscribe, update } = writable({
-    MAX: DEFAULT_TARGETS,
-    MIN: DEFAULT_TARGETS,
-  });
+  const defaultValues = {
+    MAX: defaultTargets("max"),
+    MIN: defaultTargets("min"),
+  };
+  const { subscribe, update } = writable(defaultValues);
 
   return {
     subscribe,

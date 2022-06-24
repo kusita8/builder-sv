@@ -8,7 +8,6 @@
 
   export let value = "";
   export let data: Data;
-  // your script goes here
 
   const inputGlobalAttrs = {
     name: data.label,
