@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 
-import type { ENUMS } from "./enums";
+import type { ENUMS } from "./pages/Builder/enums";
 
 export interface Attribute {
   [name: string]: string;
@@ -16,7 +16,7 @@ export interface Item {
   hasChildren: boolean;
   showingChildren: boolean;
   isComponent: boolean;
-  attributes: Attribute | {}
+  attributes: Attribute | {};
   className?: string;
 }
 
@@ -27,13 +27,13 @@ export interface UserSiteEvent {
 
 export interface StyleStoreItem {
   [id: string]: {
-    [target]: string
-  }
+    [target]: string;
+  };
 }
 
 export interface Dimensions {
-  width: number,
-  height: number
+  width: number;
+  height: number;
 }
 
 interface Target {
