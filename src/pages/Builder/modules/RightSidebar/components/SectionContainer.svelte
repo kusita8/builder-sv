@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Flex from "../../../components/atoms/Flex.svelte";
+  import Flex from "../../../../../components/atoms/Flex.svelte";
   import Icon from "../../../components/atoms/Icon.svelte";
 
   import { getClass } from "../../../util/getClass";

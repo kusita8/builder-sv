@@ -1,6 +1,6 @@
 <script lang="ts">
   import Button from "../../../components/atoms/Button.svelte";
-  import Flex from "../../../components/atoms/Flex.svelte";
+  import Flex from "../../../../../components/atoms/Flex.svelte";
   import Input from "../../../components/atoms/Input.svelte";
 
   export let name = "";

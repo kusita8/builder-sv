@@ -84,9 +84,10 @@ export const ItemsStore = (() => {
         }
       });
 
-      await userSite().addToParent(newItem);
-
-      res(true);
+      requestAnimationFrame(async () => {
+        await userSite().addToParent(newItem);
+        res(true);
+      });
     });
 
   return {

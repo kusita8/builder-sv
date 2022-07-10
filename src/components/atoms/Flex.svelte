@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getClass } from "../../util/getClass";
+  import { getClass } from "../../pages/Builder/util/getClass";
 
   export let justifyContent: "space-between" | "center" | "flex-end" =
     undefined;

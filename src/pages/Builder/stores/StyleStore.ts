@@ -62,6 +62,7 @@ export const StyleStore = (() => {
             className,
             style: store[className] && store[className][target],
             target,
+            item,
           },
         });
 
@@ -75,7 +76,9 @@ export const StyleStore = (() => {
       classNameToId[className] = item.id;
       storeData.saveOnLocal(localClassNameToIdKey, classNameToId);
 
-      res(true);
+      requestAnimationFrame(() => {
+        res(true);
+      });
     });
 
   return {

@@ -3,7 +3,7 @@
   import Icon from "../../../components/atoms/Icon.svelte";
   import { ItemsStore } from "../../../stores/ItemsStore";
   import { SelectedItemStore } from "../../../stores/SelectedItemStore";
-  import type { Item } from "../../../global";
+  import type { Item } from "../../../../../global";
   import { AddStore } from "../../../stores/AddStore";
   export let data: Item;
 
@@ -16,8 +16,6 @@
   });
 
   const selectComponent = () => {
-    const activeElement = document.activeElement as HTMLInputElement;
-    if (activeElement.blur) activeElement.blur();
     SelectedItemStore.set(data);
   };
 
@@ -69,8 +67,8 @@
     {/if}
     <div class="label">
       <textarea
-        on:mousedown={(e) => e.stopPropagation()}
-        on:click={(e) => e.stopPropagation()}
+        on:mousedown|stopPropagation
+        on:click|stopPropagation
         on:input={handleLabelChange}
         on:blur={handleBlur}
         rows="1"

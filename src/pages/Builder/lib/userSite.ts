@@ -119,7 +119,7 @@ class UserSite {
     return node;
   }
 
-  private _generateCssRules(className, style, target: string) {
+  private _generateCssRules(className, style, target: string, item: Item) {
     const urlStyleRegex = new RegExp(/^(\@).*?(([\)|;]))$/gms);
     const nestedStyleRegex = new RegExp(/^([^\n]*\{).*?(\})$/gms);
     const targetStyle = style
@@ -131,6 +131,16 @@ class UserSite {
     const rule = `.${className}{${targetStyle}}`;
     let classNameRule = [];
     let nestedRules = [];
+
+    if (targetStyle.includes("url")) {
+      this.removeDefaultItemClass(item);
+    } else if (
+      !item.node.hasChildNodes() &&
+      item.node.tagName !== "IMG" &&
+      !(item.attributes as any).src
+    ) {
+      this.addDefaultItemClass(item);
+    }
 
     if (!target || target.includes("ALL")) {
       if (targetStyle) classNameRule = [rule];
@@ -175,16 +185,7 @@ class UserSite {
 
   addToParent(item: Item) {
     return new Promise((res) => {
-      if (this.isMutating) {
-        this.mutationBacklog.push(() => this.addToParent(item));
-        return;
-      }
-
-      this.isMutating = true;
-
       const node = this._generateNode(item);
-
-      this.currentMutationNode = node;
 
       if (item.parentId) {
         const parent = this.body.querySelector(`[${DATA_ID}=${item.parentId}]`);
@@ -252,12 +253,12 @@ class UserSite {
     HighlightStore.refresh();
   }
 
-  updateStyle({ className, style, target }) {
+  updateStyle({ className, style, target, item }) {
     this.deleteItemCssRules(className, target);
 
     // ADD NEW RULE
     if (style) {
-      const rules = this._generateCssRules(className, style, target);
+      const rules = this._generateCssRules(className, style, target, item);
 
       rules.forEach((rule) => {
         try {

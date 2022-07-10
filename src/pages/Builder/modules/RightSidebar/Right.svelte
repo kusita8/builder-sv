@@ -36,12 +36,15 @@
 </aside>
 
 <style type="text/scss">
+  @import "src/styles/variables.scss";
+
   .right-sidebar {
     flex-basis: 20%;
     min-width: 20%;
     background: white;
     z-index: 2;
     overflow-y: auto;
+    border-left: 1px solid $grey-a;
 
     .right-sidebar__inner {
       padding-top: 20px;

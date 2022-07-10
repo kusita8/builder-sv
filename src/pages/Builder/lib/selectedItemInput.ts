@@ -74,7 +74,11 @@ class SelectedItemInput {
         const value = localStore[id];
         if (value) {
           const item = itemStore.find((item) => item.id === id);
-          userSite().updateItemInnerText(item, value);
+          if (item) {
+            requestAnimationFrame(() => {
+              userSite().updateItemInnerText(item, value);
+            });
+          }
         }
       }
 

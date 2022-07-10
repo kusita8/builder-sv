@@ -42,7 +42,6 @@
             on:mousedown={(e) => DragHandler(e, "height", userSiteContainer)}
           />
         </div>
-        <!-- <div class="user-site__cover" /> -->
         <iframe
           bind:this={iframe}
           src="./iframe.html"
@@ -51,7 +50,6 @@
         />
       </div>
     </div>
-    <!-- <div class="vertical-scrollspace" /> -->
   </div>
 </div>
 
@@ -75,7 +73,6 @@
     background: #f1f1f1;
     max-height: 100%;
     overflow: scroll;
-    border: 1px solid black;
 
     &__inner {
       transform-origin: 0 0 0;

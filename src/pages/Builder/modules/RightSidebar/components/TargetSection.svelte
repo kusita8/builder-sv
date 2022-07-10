@@ -3,7 +3,7 @@
   import SectionContainer from "./SectionContainer.svelte";
   import { createEventDispatcher } from "svelte";
   import { TargetsStore } from "../../../stores/TargetsStore";
-  import Flex from "../../../components/atoms/Flex.svelte";
+  import Flex from "../../../../../components/atoms/Flex.svelte";
   import Button from "../../../components/atoms/Button.svelte";
 
   interface Data {

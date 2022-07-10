@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from "../../components/atoms/Button.svelte";
 
-  import Flex from "../../components/atoms/Flex.svelte";
+  import Flex from "../../../../components/atoms/Flex.svelte";
   import Icon from "../../components/atoms/Icon.svelte";
   import { AddStore } from "../../stores/AddStore";
 
@@ -24,13 +24,16 @@
   </div>
 </aside>
 
-<style>
+<style lang="scss">
+  @import "src/styles/variables.scss";
+
   .left-sidebar {
     flex-basis: var(--left-sidebar-width);
     min-width: var(--left-sidebar-width);
     background: white;
     height: 100%;
     z-index: 2;
+    border-right: 1px solid $grey-a;
   }
 
   .left-sidebar-items {

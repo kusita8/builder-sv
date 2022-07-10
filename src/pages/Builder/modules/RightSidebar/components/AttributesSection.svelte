@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { Attribute } from "../../../global";
+  import type { Attribute } from "../../../../../global";
   import SectionContainer from "./SectionContainer.svelte";
   import { createEventDispatcher } from "svelte";
   import AddAttributeModal from "./AddAttributeModal.svelte";
   import Icon from "../../../components/atoms/Icon.svelte";
-  import Flex from "../../../components/atoms/Flex.svelte";
+  import Flex from "../../../../../components/atoms/Flex.svelte";
   import { SelectedItemStore } from "../../../stores/SelectedItemStore";
 
   interface Data {
