@@ -28,7 +28,7 @@
         const unStyleStore = await StyleStore.hydrate();
         cleanups.push(unItemsStore, unStyleStore);
         selectedItemInput().hydrate();
-      }, 200);
+      }, 400);
     }, 400);
   });
 
